@@ -75,19 +75,19 @@ class Part(dj.Part):
         if keys:
             logger.info(f"{cls.__name__} -- Inserting {len(keys)} keys")
 
-            name = cls.master.name
-            length = cls.master.length
+            master = cls.master
+            name = master.name
+            length = master.length
 
-            primary = f"{name}_id"
             secondary = {f"{name}_type": cls.__name__}
 
-            primary_keys = [key_hash(dict(key, **secondary)) for key in keys]
-            primary_keys = [{primary: key[:length]} for key in primary_keys]
+            primary = [key_hash(dict(k, **secondary)) for k in keys]
+            primary = [{f"{name}_id": p[:length]} for p in primary]
 
-            master_keys = [dict(**pk, **secondary) for pk in primary_keys]
-            part_keys = [dict(**pk, **key) for pk, key in zip(primary_keys, keys)]
+            master_keys = [dict(**p, **secondary) for p in primary]
+            part_keys = [dict(**p, **k) for p, k in zip(primary, keys)]
 
-            cls.master.insert(master_keys, skip_duplicates=True)
+            master.insert(master_keys, skip_duplicates=True)
             cls.insert(part_keys)
 
         else:
