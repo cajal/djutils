@@ -38,7 +38,7 @@ class Master(dj.Lookup):
 
     @classmethod
     def clean(cls):
-        """Deletes keys from self that are missing in links"""
+        """Deletes tuples from self that are missing in links"""
         keys = []
         for table in cls.tables:
             keys += getattr(cls, table).fetch(dj.key)
