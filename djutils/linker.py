@@ -79,16 +79,17 @@ class Part(dj.Part):
             name = master.name
             length = master.length
 
-            secondary = {f"{name}_type": cls.__name__}
+            cls_type = {f"{name}_type": cls.__name__}
+            hashes = [key_hash(dict(k, **cls_type)) for k in keys]
+            hashes = [{f"{name}_id": p[:length]} for p in hashes]
 
-            primary = [key_hash(dict(k, **secondary)) for k in keys]
-            primary = [{f"{name}_id": p[:length]} for p in primary]
-
-            master_keys = [dict(**p, **secondary) for p in primary]
-            part_keys = [dict(**p, **k) for p, k in zip(primary, keys)]
-
-            master.insert(master_keys, skip_duplicates=True)
-            cls.insert(part_keys)
+            master.insert(
+                [dict(**h, **cls_type) for h in hashes],
+                skip_duplicates=True,
+            )
+            cls.insert(
+                [dict(**h, **k) for h, k in zip(hashes, keys)],
+            )
 
         else:
             logger.info(f"{cls.__name__} -- No new keys to insert")
