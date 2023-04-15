@@ -137,11 +137,12 @@ def setup(cls, schema):
 
         if database == schema.database:
             foreign = table
+
         else:
+            foreign = f"{database}.{table}"
+
             if database not in context:
                 context[database] = dj.create_virtual_module(database, database)
-
-            foreign = f"{database}.{table}"
 
         part_attr = dict(
             definition=part_definition(foreign),
