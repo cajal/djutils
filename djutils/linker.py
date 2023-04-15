@@ -108,7 +108,7 @@ def link(schema):
         context = schema.context
 
     def decorate(cls):
-        cls = setup(cls, dict(context))
+        cls = setup(cls, context)
         cls = schema(cls, context=context)
         return cls
 
@@ -146,6 +146,8 @@ def setup(cls, context):
             _link=link,
         )
         master_attr[table] = type(table, (Part,), part_attr)
+
+        print(part_attr)
 
     cls = type(cls.__name__, (Master,), master_attr)
     return cls
