@@ -18,14 +18,13 @@ def master_definition(name, comment, length):
     )
 
 
-def part_definition(database, table):
+def part_definition(foreign):
     return """
     -> master
     ---
-    -> {database}.{table}
+    -> {foreign}
     """.format(
-        database=database,
-        table=table,
+        foreign=foreign,
     )
 
 
@@ -101,21 +100,14 @@ class Part(dj.Part):
 
 
 def link(schema):
-
-    if schema.context is None:
-        context = inspect.currentframe().f_back.f_locals
-    else:
-        context = schema.context
-
     def decorate(cls):
-        cls = setup(cls, context)
-        cls = schema(cls, context=context)
+        cls = setup(cls, schema)
         return cls
 
     return decorate
 
 
-def setup(cls, context):
+def setup(cls, schema):
 
     links = tuple(cls.links)
     databases = tuple(link.database for link in links)
@@ -136,18 +128,27 @@ def setup(cls, context):
         length=length,
     )
 
+    if schema.context is None:
+        context = dict(inspect.currentframe().f_back.f_locals)
+    else:
+        context = dict(schema.context)
+
     for link, database, table in zip(links, databases, tables):
 
-        if database not in context:
-            context[database] = dj.create_virtual_module(database, database)
+        if database == schema.database:
+            foreign = table
+        else:
+            if database not in context:
+                context[database] = dj.create_virtual_module(database, database)
+
+            foreign = f"{database}.{table}"
 
         part_attr = dict(
-            definition=part_definition(database, table),
+            definition=part_definition(foreign),
             _link=link,
         )
         master_attr[table] = type(table, (Part,), part_attr)
 
-        print(part_attr)
-
     cls = type(cls.__name__, (Master,), master_attr)
+    cls = schema(cls, context=context)
     return cls
