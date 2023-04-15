@@ -7,7 +7,7 @@ from .logging import logger
 
 def master_definition(name, comment, length):
     return """
-    {name}_id                       : varchar({length}) # {comment}
+    {name}_id                       : char({length})    # {comment}
     ---
     {name}_type                     : varchar(128)      # {name} type
     {name}_ts = CURRENT_TIMESTAMP   : timestamp         # automatic timestamp
