@@ -137,10 +137,10 @@ def setup(cls, schema):
 
         if database == schema.database:
             foreign = table
-
+            if table not in context:
+                context[table] = link
         else:
             foreign = f"{database}.{table}"
-
             if database not in context:
                 context[database] = dj.create_virtual_module(database, database)
 
