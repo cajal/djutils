@@ -62,6 +62,32 @@ class Master(dj.Lookup):
         """
         return self.part.link
 
+    @classmethod
+    def join(cls, link_type, link_key=None):
+        """Returns the part table of link_type joined to the link, restricted by link_key
+
+        Parameters
+        ----------
+        link_type : str
+            link type
+        link_key : dj.key | None
+            link key, optional
+        """
+        _link_type = f"{cls.name}_type"
+
+        keys = cls & {_link_type: link_type}
+        if not keys:
+            logger.warning(f"Link type does not exist. Returning None.")
+            return None
+
+        part = keys.part
+        keys = part * part._link if link_key is None else part * part._link & link_key
+        if not keys:
+            logger.warning(f"No keys found. Returning None.")
+            return None
+
+        return keys
+
 
 class Part(dj.Part):
     @classmethod
