@@ -84,7 +84,7 @@ class Master(dj.Lookup):
             logger.warning(f"Link type does not exist. Returning None.")
             return None
 
-        part = keys.part
+        part = getattr(cls, link_type)
         keys = part * part._link if link_key is None else part * part._link & link_key
         if not keys:
             logger.warning(f"No keys found. Returning None.")
