@@ -64,14 +64,18 @@ class Master(dj.Lookup):
 
     @classmethod
     def join(cls, link_type, link_key=None):
-        """Returns the part table of link_type joined to the link, restricted by link_key
-
+        """
         Parameters
         ----------
         link_type : str
             link type
         link_key : dj.key | None
             link key, optional
+
+        Returns
+        -------
+        dj.UserTable
+            part table of link_type joined to the link, optionally restricted by link_key
         """
         _link_type = f"{cls.name}_type"
 
