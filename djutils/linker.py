@@ -32,35 +32,38 @@ class Master(dj.Lookup):
     @classmethod
     def fill(cls):
         """Inserts tuples into self and the part tables"""
-        for table in cls.tables:
+        for table in cls._tables:
             getattr(cls, table).fill()
 
     @classmethod
     def clean(cls):
         """Deletes tuples from self that are missing in links"""
         keys = []
-        for table in cls.tables:
+        for table in cls._tables:
             keys += getattr(cls, table).fetch(dj.key)
 
         (cls - keys).delete()
 
     @property
-    def part(self):
-        """Returns the part table restricted by tuples
-
-        IMPORTANT: tuples must be restricted to a single type
-        """
+    def links(self):
+        """Returns a list of restricted linked tables"""
         link_type = f"{self.name}_type"
-        link_type = (dj.U(link_type) & self).fetch1(link_type)
-        return getattr(self, link_type) & self
+        types = (dj.U(link_type) & self).fetch(link_type)
+        parts = (getattr(self, t) & self for t in types)
+        return tuple(part.link for part in parts)
 
     @property
     def link(self):
-        """Returns the linked table restricted by tuples
+        """Returns a list of restricted linked tables
 
         IMPORTANT: tuples must be restricted to a single type
         """
-        return self.part.link
+        links = self.links
+
+        if len(links) != 1:
+            raise ValueError("Must restrict to exactly one link type.")
+
+        return links[0]
 
     @classmethod
     def join(cls, link_type, link_key=None):
@@ -140,8 +143,8 @@ def link(schema):
 def setup(cls, schema):
 
     links = tuple(cls.links)
-    databases = tuple(link.database for link in links)
     tables = tuple(link.__name__ for link in links)
+    databases = tuple(link.database for link in links)
 
     name = str(cls.name)
     comment = str(cls.comment)
@@ -150,9 +153,8 @@ def setup(cls, schema):
 
     master_attr = dict(
         definition=master_definition(name, comment, length),
-        links=links,
-        databases=databases,
-        tables=tables,
+        _links=links,
+        _tables=tables,
         name=name,
         comment=comment,
         length=length,
