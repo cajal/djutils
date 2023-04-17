@@ -54,7 +54,7 @@ class Master(dj.Lookup):
 
     @property
     def link(self):
-        """Returns a list of restricted linked tables
+        """Returns a restricted linked table
 
         IMPORTANT: tuples must be restricted to a single type
         """
