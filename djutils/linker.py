@@ -66,13 +66,13 @@ class Master(dj.Lookup):
         return links[0]
 
     @classmethod
-    def join(cls, link_type, link_key=None):
+    def get(cls, link_type, link_key=None):
         """
         Parameters
         ----------
         link_type : str
             link type
-        link_key : dj.key | None
+        link_key : datajoint restriction | None
             link key, optional
 
         Returns
@@ -94,6 +94,21 @@ class Master(dj.Lookup):
             return None
 
         return keys
+
+    def filter(self, restriction):
+        """Filters tuples by link restriction
+
+        Parameters
+        ----------
+        restriction : datajoint restriction
+            used to restrict links
+
+        Returns
+        -------
+        dj.Lookup
+            restricted tuples
+        """
+        return self & [l.restrict(restriction) for l in self.links]
 
 
 class Part(dj.Part):
