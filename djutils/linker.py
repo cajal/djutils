@@ -46,7 +46,7 @@ class Master(dj.Lookup):
 
     @property
     def links(self):
-        """Returns a list of restricted linked tables"""
+        """Returns restricted linked tables"""
         link_type = f"{self.name}_type"
         types = (dj.U(link_type) & self).fetch(link_type)
         parts = (getattr(self, t) & self for t in types)
@@ -54,7 +54,7 @@ class Master(dj.Lookup):
 
     @property
     def link(self):
-        """Returns a restricted linked table
+        """Returns restricted linked table
 
         IMPORTANT: tuples must be restricted to a single type
         """
