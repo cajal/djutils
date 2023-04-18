@@ -77,8 +77,8 @@ class Master:
 
         Returns
         -------
-        dj.UserTable
-            part table of link_type joined to the link, optionally restricted by link_key
+        dj.Lookup
+            link table restricted by link type, and optionally restricted by link key
         """
         _link_type = f"{cls.name}_type"
         keys = cls & {_link_type: link_type}
