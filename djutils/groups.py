@@ -1,7 +1,6 @@
 import datajoint as dj
 from datajoint.hash import key_hash
 from datajoint.utils import user_choice
-import inspect
 from .context import foreigns
 from .errors import MissingError
 from .logging import logger

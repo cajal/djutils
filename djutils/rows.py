@@ -27,4 +27,4 @@ def row_method(method):
 
         return method(self, *args, **kwargs)
 
-    return
+    return _method
