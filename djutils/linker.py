@@ -1,6 +1,5 @@
 import datajoint as dj
 from datajoint.hash import key_hash
-from datajoint.utils import to_camel_case
 import inspect
 from .logging import logger
 from .errors import MissingError
