@@ -80,7 +80,7 @@ class Master(dj.Lookup):
             return
 
         if note:
-            logger.info(f"New note for {key} inserted.")
+            logger.info(f"Note for {key} inserted.")
             cls.Note.insert1(dict(key, note=note), skip_duplicates=True)
 
     @property
