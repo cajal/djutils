@@ -13,7 +13,7 @@ def definition(name, comment):
 
 
 def decorate_method(method, name):
-    """Decorator that ensures that the table contains the method tuple before returning method"""
+    """Decorator that ensures that the table contains the method tuple before calling the method"""
 
     @wraps(method)
     def _method(self, *args, **kwargs):
@@ -27,7 +27,7 @@ def decorate_method(method, name):
 
 
 def decorate_property(prop, name):
-    """Decorator that ensures that the table contains the method tuple before returning method"""
+    """Decorator that ensures that the table contains the method tuple before returning the property"""
 
     @wraps(prop)
     def _property(self):
