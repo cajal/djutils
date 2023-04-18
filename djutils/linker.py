@@ -3,6 +3,7 @@ from datajoint.hash import key_hash
 from datajoint.utils import to_camel_case
 import inspect
 from .logging import logger
+from .errors import MissingError
 
 
 def master_definition(name, comment, length):
@@ -81,19 +82,16 @@ class Master(dj.Lookup):
             part table of link_type joined to the link, optionally restricted by link_key
         """
         _link_type = f"{cls.name}_type"
-
         keys = cls & {_link_type: link_type}
         if not keys:
-            logger.warning(f"Link type does not exist. Returning None.")
-            return None
+            raise MissingError("Link type does not exist.")
 
         part = getattr(cls, link_type)
-        keys = part * part._link if link_key is None else part * part._link & link_key
-        if not keys:
-            logger.warning(f"No keys found. Returning None.")
-            return None
+        links = part * part._link if link_key is None else part * part._link & link_key
+        if not links:
+            raise MissingError("No links found.")
 
-        return keys
+        return keys & links
 
     def filter(self, restriction):
         """Filters tuples by link restriction
