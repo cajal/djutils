@@ -4,7 +4,7 @@ from .errors import RestrictionError
 
 def definition(name, comment):
     return """
-    {name}_method               : varchar(128)          # {comment}
+    {name}                  : varchar(128)          # {comment}
     """.format(
         name=name,
         comment=comment,
@@ -16,8 +16,8 @@ class Method(dj.Lookup):
 
         if name in self._methods:
 
-            if name not in self.fetch(f"{self.name}_method"):
-                raise RestrictionError(f"Table restriction does not include {name}")
+            if name not in self.fetch(self.name):
+                raise RestrictionError(f"Table restriction does not include '{name}'")
 
             return getattr(self, f"_{name}")
 

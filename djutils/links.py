@@ -173,14 +173,14 @@ def setup(cls, schema):
     keys, context = foreigns(links, schema)
     parts = []
 
-    for key in keys:
+    for key, _link in zip(keys, links):
 
         part = key.split(".")[-1]
         assert part not in parts
 
         part_attr = dict(
             definition=part_definition(key),
-            _link=link,
+            _link=_link,
         )
         master_attr[part] = type(part, (Part,), part_attr)
 
