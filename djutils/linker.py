@@ -32,7 +32,7 @@ def part_definition(foreign):
 class Master(dj.Lookup):
     @classmethod
     def fill(cls):
-        """Inserts tuples into self and the part tables"""
+        """Inserts tuples into self and part tables"""
         for table in cls._tables:
             getattr(cls, table).fill()
 
