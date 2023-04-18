@@ -2,6 +2,7 @@ import datajoint as dj
 from datajoint.hash import key_hash
 from datajoint.utils import user_choice
 import inspect
+from .context import foreigns
 from .errors import MissingError
 from .logging import logger
 
@@ -19,12 +20,12 @@ def master_definition(name, comment, length):
     )
 
 
-def member_definition(foreigns):
+def member_definition(foriegn_keys):
     return """
     -> master
-    {foreigns}
+    {foriegn_keys}
     """.format(
-        foreigns="\n    ".join([f"-> {f}" for f in foreigns]),
+        foriegn_keys="\n    ".join([f"-> {f}" for f in foriegn_keys]),
     )
 
 
@@ -105,36 +106,16 @@ def group(schema):
 
 def setup(cls, schema):
 
-    keys = tuple(cls.keys)
-    tables = tuple(key.__name__ for key in keys)
-    databases = tuple(key.database for key in keys)
-
     name = str(cls.name)
     comment = str(cls.comment)
+    keys = tuple(cls.keys)
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
-    if schema.context is None:
-        context = dict(inspect.currentframe().f_back.f_locals)
-    else:
-        context = dict(schema.context)
-
-    foreigns = []
-    for key, database, table in zip(keys, databases, tables):
-
-        if database == schema.database:
-            foreign = table
-            if table not in context:
-                context[table] = key
-        else:
-            foreign = f"{database}.{table}"
-            if database not in context:
-                context[database] = dj.create_virtual_module(database, database)
-
-        foreigns.append(foreign)
+    foriegn_keys, context = foreigns(keys, schema)
 
     member_attr = dict(
-        definition=member_definition(foreigns),
+        definition=member_definition(foriegn_keys),
     )
     Member = type("Member", (dj.Part,), member_attr)
 
@@ -145,14 +126,13 @@ def setup(cls, schema):
 
     master_attr = dict(
         definition=master_definition(name, comment, length),
-        keys=keys,
-        _key_source=None,
-        _tables=tables,
         name=name,
         comment=comment,
+        keys=keys,
         length=length,
         Member=Member,
         Note=Note,
+        _key_source=None,
     )
     cls = type(cls.__name__, (Master,), master_attr)
     cls = schema(cls, context=context)

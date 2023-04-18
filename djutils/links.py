@@ -1,6 +1,7 @@
 import datajoint as dj
 from datajoint.hash import key_hash
 import inspect
+from .context import foreigns
 from .logging import logger
 from .errors import MissingError
 
@@ -154,45 +155,35 @@ def link(schema):
 
 def setup(cls, schema):
 
-    links = tuple(cls.links)
-    tables = tuple(link.__name__ for link in links)
-    databases = tuple(link.database for link in links)
-
     name = str(cls.name)
     comment = str(cls.comment)
+    links = tuple(cls.links)
+    tables = tuple(link.__name__ for link in links)
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
     master_attr = dict(
         definition=master_definition(name, comment, length),
-        _links=links,
-        _tables=tables,
         name=name,
         comment=comment,
         length=length,
+        _links=links,
+        _tables=tables,
     )
 
-    if schema.context is None:
-        context = dict(inspect.currentframe().f_back.f_locals)
-    else:
-        context = dict(schema.context)
+    keys, context = foreigns(links, schema)
+    parts = []
 
-    for link, database, table in zip(links, databases, tables):
+    for key in keys:
 
-        if database == schema.database:
-            foreign = table
-            if table not in context:
-                context[table] = link
-        else:
-            foreign = f"{database}.{table}"
-            if database not in context:
-                context[database] = dj.create_virtual_module(database, database)
+        part = key.split(".")[-1]
+        assert part not in parts
 
         part_attr = dict(
-            definition=part_definition(foreign),
+            definition=part_definition(key),
             _link=link,
         )
-        master_attr[table] = type(table, (Part,), part_attr)
+        master_attr[part] = type(part, (Part,), part_attr)
 
     cls = type(cls.__name__, (Master,), master_attr)
     cls = schema(cls, context=context)
