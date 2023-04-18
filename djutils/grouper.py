@@ -2,6 +2,7 @@ import datajoint as dj
 from datajoint.hash import key_hash
 from datajoint.utils import user_choice
 import inspect
+from .errors import MissingError
 from .logging import logger
 
 
@@ -87,8 +88,11 @@ class Master(dj.Lookup):
     def members(self):
         key, n = self.fetch1(dj.key, "members")
         members = self.Member & key
-        assert len(members) == n
-        return members
+
+        if len(members) == n:
+            return members
+        else:
+            raise MissingError("Members are missing.")
 
 
 def group(schema):
