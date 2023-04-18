@@ -36,7 +36,7 @@ note_definition = """
     """
 
 
-class Master(dj.Lookup):
+class Master:
     @property
     def key_source(self):
         if self._key_source is None:
@@ -133,6 +133,6 @@ def setup(cls, schema):
         Note=Note,
         _key_source=None,
     )
-    cls = type(cls.__name__, (Master,), master_attr)
+    cls = type(cls.__name__, (Master, cls, dj.Lookup), master_attr)
     cls = schema(cls, context=context)
     return cls

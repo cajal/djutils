@@ -28,7 +28,7 @@ def part_definition(foreign):
     )
 
 
-class Master(dj.Lookup):
+class Master:
     @classmethod
     def fill(cls):
         """Inserts tuples into self and part tables"""
@@ -184,6 +184,6 @@ def setup(cls, schema):
         )
         master_attr[part] = type(part, (Part,), part_attr)
 
-    cls = type(cls.__name__, (Master,), master_attr)
+    cls = type(cls.__name__, (Master, cls, dj.Lookup), master_attr)
     cls = schema(cls, context=context)
     return cls
