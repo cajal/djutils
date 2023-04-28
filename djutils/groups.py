@@ -49,7 +49,7 @@ class Master:
         return self._key_source
 
     @classmethod
-    def fill(cls, restriction, note=None, *, prompt=True):
+    def fill(cls, restriction, note=None, *, prompt=True, silent=False):
         """Creates a hash for the restricted tuples, and inserts into master, member, and note tables
 
         Parameters
@@ -69,7 +69,9 @@ class Master:
 
         if cls & key:
             assert (cls & key).fetch1("members") == len(cls.Member & key)
-            logger.info(f"{key} already exists.")
+
+            if not silent:
+                logger.info(f"{key} already exists.")
 
         elif not prompt or user_choice(f"Insert group with {size} keys?") == "yes":
             cls.insert1(dict(key, members=size))
@@ -77,14 +79,19 @@ class Master:
             members = (cls & key).proj() * keys
             cls.Member.insert(members)
 
-            logger.info(f"{key} inserted.")
+            if not silent:
+                logger.info(f"{key} inserted.")
 
         else:
-            logger.info(f"{key} not inserted.")
+            if not silent:
+                logger.info(f"{key} not inserted.")
+
             return
 
         if note:
-            logger.info(f"Note for {key} inserted.")
+            if not silent:
+                logger.info(f"Note for {key} inserted.")
+
             cls.Note.insert1(dict(key, note=note), skip_duplicates=True)
 
         return key
