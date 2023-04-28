@@ -105,7 +105,7 @@ class Master:
         if key:
             return cls & key.fetch1(dj.key)
         else:
-            raise MissingError("Tuple set does not exist.")
+            raise MissingError("Member set does not exist.")
 
     @property
     def members(self):
