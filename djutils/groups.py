@@ -81,7 +81,7 @@ class Master:
 
         else:
             logger.info(f"{key} not inserted.")
-            return key
+            return
 
         if note:
             logger.info(f"Note for {key} inserted.")
