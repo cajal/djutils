@@ -97,7 +97,7 @@ class Master:
         Returns
         -------
         dj.Lookup
-            single tuple of group table that matches restriction
+            single tuple that matches restriction
         """
         key = cls.key_source & restriction
         key = cls.aggr(cls.Member * key, n="count(*)") & f"n = {len(key)}"
