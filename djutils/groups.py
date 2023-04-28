@@ -60,9 +60,10 @@ class Master:
             note to attach to the tuple set
         """
         keys = cls.key_source.restrict(restriction)
+        size = len(keys)
 
         hashes = keys.fetch(as_dict=True, order_by=keys.primary_key)
-        hashes = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
+        hashes = dict([[i, key_hash(k)] for i, k in enumerate(hashes)])
 
         key = {f"{cls.name}_id": key_hash(hashes)}
 
@@ -70,8 +71,8 @@ class Master:
             assert (cls & key).fetch1("members") == len(cls.Member & key)
             logger.info(f"{key} already exists.")
 
-        elif not prompt or user_choice(f"Insert group with {len(keys)} keys?") == "yes":
-            cls.insert1(dict(key, members=len(keys)))
+        elif not prompt or user_choice(f"Insert group with {size} keys?") == "yes":
+            cls.insert1(dict(key, members=size))
 
             members = (cls & key).proj() * keys
             cls.Member.insert(members)
