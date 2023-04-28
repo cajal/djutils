@@ -81,11 +81,13 @@ class Master:
 
         else:
             logger.info(f"{key} not inserted.")
-            return
+            return key
 
         if note:
             logger.info(f"Note for {key} inserted.")
             cls.Note.insert1(dict(key, note=note), skip_duplicates=True)
+
+        return key
 
     @classmethod
     def get(cls, restriction):
