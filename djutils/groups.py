@@ -56,6 +56,8 @@ class Master:
         ----------
         restriction : datajoint restriction
             used to restrict key_source
+        note : str | None
+            note to attach to the tuple set
         """
         keys = cls.key_source.restrict(restriction)
 
@@ -83,6 +85,27 @@ class Master:
         if note:
             logger.info(f"Note for {key} inserted.")
             cls.Note.insert1(dict(key, note=note), skip_duplicates=True)
+
+    @classmethod
+    def get(cls, restriction):
+        """
+        Parameters
+        ----------
+        restriction : datajoint restriction
+            used to restrict key_source
+
+        Returns
+        -------
+        dj.Lookup
+            single tuple of group table that matches restriction
+        """
+        key = cls.key_source & restriction
+        key = cls.aggr(cls.Member * key, n="count(*)") & f"n = {len(key)}"
+
+        if key:
+            return cls & key.fetch1(dj.key)
+        else:
+            raise MissingError("Tuple set does not exist.")
 
     @property
     def members(self):
