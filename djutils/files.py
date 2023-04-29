@@ -3,6 +3,7 @@ import datajoint as dj
 from datajoint.hash import key_hash
 from datajoint.utils import from_camel_case, user_choice
 from shutil import rmtree
+from .rows import row_method
 from .logging import logger
 
 
@@ -10,10 +11,17 @@ class Files:
     store = None
 
     @classmethod
-    def table_dir(cls, *, root=None, create=False):
+    def table_dir(cls, create=False, *, root=None):
         """
-        root : str | None
-            root directory
+        Parameters
+        ----------
+        create : bool
+            create the directory
+
+        Returns
+        -------
+        str
+            table directory
         """
         if root is None:
             if cls.store is None:
@@ -29,12 +37,19 @@ class Files:
         return table_dir
 
     @classmethod
-    def tuple_dir(cls, key, *, root=None, create=False):
+    def tuple_dir(cls, key, create=False, *, root=None):
         """
+        Parameters
+        ----------
         key : dict
-            dictionary primary key of table
-        root : str | None
-            root directory --- defaults to cls.store location if root is None
+            primary key of the table
+        create : bool
+            create the directory
+
+        Returns
+        -------
+        str
+            tuple directory
         """
         key = {k: key[k] for k in cls.primary_key}
 
@@ -45,8 +60,20 @@ class Files:
 
         return tuple_dir
 
+    @row_method
+    def dir(self, *, root=None):
+        """
+        Returns
+        -------
+        str
+            tuple directory
+        """
+        return self.tuple_dir(self.fetch1(dj.key), root=root)
+
     @classmethod
     def prune(cls, *, root=None):
+        """Prunes the untracked files in the table_dir"""
+
         table_dir = cls.table_dir(root=root)
 
         if not os.path.exists(table_dir):
