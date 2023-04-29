@@ -23,6 +23,8 @@ def member_definition(foriegn_keys):
     return """
     -> master
     {foriegn_keys}
+    ---
+    member_id                       : int unsigned      # member id
     """.format(
         foriegn_keys="\n    ".join([f"-> {f}" for f in foriegn_keys]),
     )
@@ -30,7 +32,7 @@ def member_definition(foriegn_keys):
 
 note_definition = """
     -> master
-    note                            :varchar(1024)      # group note
+    note                            : varchar(1024)     # group note
     ---
     note_ts = CURRENT_TIMESTAMP     : timestamp         # automatic timestamp
     """
@@ -76,7 +78,8 @@ class Master:
         elif not prompt or user_choice(f"Insert group with {size} keys?") == "yes":
             cls.insert1(dict(key, members=size))
 
-            members = (cls & key).proj() * keys
+            members = keys.fetch(as_dict=True, order_by=cls.key_source.primary_key)
+            members = [dict(member_id=i, **key, **k) for i, k in enumerate(members)]
             cls.Member.insert(members)
 
             if not silent:
