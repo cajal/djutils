@@ -22,14 +22,24 @@ def foreigns(tables, schema):
     foreigns = []
 
     for table in tables:
-        name = table.__name__
+
         database = table.database
 
         if database == schema.database:
-            foreign = name
-            context[name] = table
+
+            if issubclass(table, dj.Part):
+                foreign = f"{table._master.__name__}.{table.__name__}"
+                context[table._master.__name__] = table._master
+            else:
+                foreign = table.__name__
+                context[table.__name__] = table
+
         else:
-            foreign = f"{database}.{name}"
+            if issubclass(table, dj.Part):
+                foreign = f"{database}.{table._master.__name__}.{table.__name__}"
+            else:
+                foreign = f"{database}.{table.__name__}"
+
             if database not in context:
                 context[database] = dj.create_virtual_module(database, database)
 
