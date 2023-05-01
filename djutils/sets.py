@@ -34,7 +34,7 @@ def member_definition(foriegn_keys):
 
 note_definition = """
     -> master
-    note                            : varchar(1024)     # set note
+    note                            : varchar(1024)     # note for set
     ---
     note_ts = CURRENT_TIMESTAMP     : timestamp         # automatic timestamp
     """
