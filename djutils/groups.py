@@ -1,6 +1,8 @@
 import datajoint as dj
 from datajoint.hash import key_hash
 from datajoint.utils import user_choice
+from operator import mul
+from functools import reduce
 from .context import foreigns
 from .errors import MissingError
 from .logging import logger
@@ -41,14 +43,7 @@ note_definition = """
 class Master:
     @property
     def key_source(self):
-        if self._key_source is None:
-
-            self._key_source = self.keys[0].proj()
-
-            for key in self.keys[1:]:
-                self._key_source *= key.proj()
-
-        return self._key_source
+        return reduce(mul, [key.proj() for key in self.keys])
 
     @classmethod
     def fill(cls, restriction, note=None, *, prompt=True, silent=False):
@@ -62,11 +57,10 @@ class Master:
             note to attach to the tuple set
         """
         keys = cls.key_source.restrict(restriction)
+        keys = keys.fetch(as_dict=True, order_by=keys.primary_key)
         size = len(keys)
 
-        hashes = keys.fetch(as_dict=True, order_by=keys.primary_key)
-        hashes = dict([[i, key_hash(k)] for i, k in enumerate(hashes)])
-
+        hashes = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
         key = {f"{cls.name}_id": key_hash(hashes)}
 
         if cls & key:
@@ -78,8 +72,7 @@ class Master:
         elif not prompt or user_choice(f"Insert group with {size} keys?") == "yes":
             cls.insert1(dict(key, members=size))
 
-            members = keys.fetch(as_dict=True, order_by=cls.key_source.primary_key)
-            members = [dict(member_id=i, **key, **k) for i, k in enumerate(members)]
+            members = [dict(member_id=i, **key, **k) for i, k in enumerate(keys)]
             cls.Member.insert(members)
 
             if not silent:
