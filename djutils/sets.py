@@ -34,7 +34,7 @@ def member_definition(foriegn_keys):
 
 note_definition = """
     -> master
-    note                            : varchar(1024)     # group note
+    note                            : varchar(1024)     # set note
     ---
     note_ts = CURRENT_TIMESTAMP     : timestamp         # automatic timestamp
     """
@@ -74,7 +74,7 @@ class Master:
             if not silent:
                 logger.info(f"{key} already exists.")
 
-        elif not prompt or user_choice(f"Insert group with {size} keys?") == "yes":
+        elif not prompt or user_choice(f"Insert set with {size} keys?") == "yes":
             cls.insert1(dict(key, members=size))
 
             members = [dict(member_id=i, **key, **k) for i, k in enumerate(keys)]
