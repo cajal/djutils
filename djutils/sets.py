@@ -124,15 +124,7 @@ class Master:
             raise MissingError("Members are missing.")
 
 
-def group(schema):
-    def decorate(cls):
-        cls = setup(cls, schema)
-        return cls
-
-    return decorate
-
-
-def setup(cls, schema):
+def setup_set(cls, schema):
 
     name = str(cls.name)
     comment = str(cls.comment)

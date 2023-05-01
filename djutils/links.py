@@ -144,15 +144,7 @@ class Part(dj.Part):
         return self._link & self
 
 
-def link(schema):
-    def decorate(cls):
-        cls = setup(cls, schema)
-        return cls
-
-    return decorate
-
-
-def setup(cls, schema):
+def setup_link(cls, schema):
 
     name = str(cls.name)
     comment = str(cls.comment)

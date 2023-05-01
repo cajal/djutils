@@ -40,15 +40,7 @@ def decorate_property(prop, name):
     return property(_property)
 
 
-def method(schema):
-    def decorate(cls):
-        cls = setup(cls, schema)
-        return cls
-
-    return decorate
-
-
-def setup(cls, schema):
+def setup_method(cls, schema):
 
     name = str(cls.name)
     comment = str(cls.comment)
