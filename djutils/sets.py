@@ -55,6 +55,11 @@ class Master:
             used to restrict key_source
         note : str | None
             note to attach to the tuple set
+
+        Returns
+        -------
+        dict | None
+            set key
         """
         keys = cls.key_source.restrict(restriction)
         keys = keys.fetch(as_dict=True, order_by=keys.primary_key)
@@ -106,7 +111,10 @@ class Master:
             single tuple that matches restriction
         """
         key = cls.key_source & restriction
-        key = cls.aggr(cls.Member * key, n="count(*)") & f"n = {len(key)}"
+        n = len(key)
+
+        sets = cls & f"members = {n}"
+        key = sets.aggr(cls.Member * key, n="count(*)") & f"n = {n}"
 
         if key:
             return cls & key.fetch1(dj.key)
