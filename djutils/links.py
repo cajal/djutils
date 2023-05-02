@@ -92,21 +92,6 @@ class Master:
 
         return keys & links
 
-    def filter(self, restriction):
-        """Filters tuples by link restriction
-
-        Parameters
-        ----------
-        restriction : datajoint restriction
-            used to restrict links
-
-        Returns
-        -------
-        dj.Lookup
-            restricted tuples
-        """
-        return self & [l.restrict(restriction) for l in self.links]
-
 
 class Part(dj.Part):
     @classmethod

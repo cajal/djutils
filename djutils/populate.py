@@ -14,8 +14,3 @@ def skip_missing(make):
             logger.warn(f"Missing data. Not populating {key}")
 
     return _make
-
-
-def setup_computed(cls, schema):
-    make = skip_missing(cls.make)
-    return type(cls.__name__, (cls, dj.Computed), dict(make=make))
