@@ -1,6 +1,7 @@
 import datajoint as dj
 from .context import foreigns
 from .utils import key_hash
+from .sets import setup_set
 from .logging import logger
 from .errors import MissingError
 
@@ -28,7 +29,7 @@ def part_definition(foreign):
     )
 
 
-class Master:
+class Link:
     @classmethod
     def fill(cls):
         """Inserts tuples into self and part tables"""
@@ -161,6 +162,17 @@ def setup_link(cls, schema):
         )
         master_attr[part] = type(part, (Part,), part_attr)
 
-    cls = type(cls.__name__, (Master, cls, dj.Lookup), master_attr)
+    cls = type(cls.__name__, (Link, cls, dj.Lookup), master_attr)
     cls = schema(cls, context=context)
     return cls
+
+
+def setup_link_set(cls, schema):
+
+    if not issubclass(cls.link, Link):
+        raise TypeError("Provided link is not a subclass of Link.")
+
+    cls.keys = [cls.link]
+    cls.part_name = "link"
+
+    return setup_set(cls, schema)

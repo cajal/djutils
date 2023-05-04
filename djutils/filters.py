@@ -1,6 +1,5 @@
 from functools import wraps
-from .links import setup_link
-from .sets import setup_set
+from .links import setup_link, setup_link_set
 
 
 def decorate_filter(filt, filt_type):
@@ -100,12 +99,8 @@ def setup_filter_link(cls, schema):
 
 def setup_filter_link_set(cls, schema):
 
-    if not issubclass(cls.filter_link, FilterLink):
+    if not issubclass(cls.link, FilterLink):
         raise TypeError("Provided filter_link is not a subclass of FilterLink.")
 
-    cls = type(
-        cls.__name__,
-        (cls, FilterLinkSet),
-        dict(keys=[cls.filter_link]),
-    )
-    return setup_set(cls, schema)
+    cls = type(cls.__name__, (cls, FilterLinkSet), dict())
+    return setup_link_set(cls, schema)

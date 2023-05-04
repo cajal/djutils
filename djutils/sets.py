@@ -2,7 +2,7 @@ import datajoint as dj
 from operator import mul
 from functools import reduce
 from .context import foreigns
-from .utils import key_hash, user_choice
+from .utils import key_hash, user_choice, to_camel_case
 from .errors import MissingError
 from .logging import logger
 
@@ -20,12 +20,10 @@ def master_definition(name, comment, length):
     )
 
 
-def member_definition(foriegn_keys):
+def part_definition(foriegn_keys):
     return """
     -> master
     {foriegn_keys}
-    ---
-    member_id                       : int unsigned      # member id
     """.format(
         foriegn_keys="\n    ".join([f"-> {f}" for f in foriegn_keys]),
     )
@@ -62,22 +60,23 @@ class Master:
         """
         keys = cls.key_source.restrict(restriction)
         keys = keys.fetch(as_dict=True, order_by=keys.primary_key)
-        size = len(keys)
+        n = len(keys)
 
-        hashes = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
-        key = {f"{cls.name}_id": key_hash(hashes)}
+        key = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
+        key = {f"{cls.name}_id": key_hash(key)}
+
+        Part = getattr(cls, cls._part)
 
         if cls & key:
-            assert (cls & key).fetch1("members") == len(cls.Member & key)
+            assert (cls & key).fetch1("members") == len(Part & key)
 
             if not silent:
                 logger.info(f"{key} already exists.")
 
-        elif not prompt or user_choice(f"Insert set with {size} keys?") == "yes":
-            cls.insert1(dict(key, members=size))
+        elif not prompt or user_choice(f"Insert set with {n} keys?") == "yes":
 
-            members = [dict(member_id=i, **key, **k) for i, k in enumerate(keys)]
-            cls.Member.insert(members)
+            cls.insert1(dict(key, members=n))
+            Part.insert([dict(**key, **k) for k in keys])
 
             if not silent:
                 logger.info(f"{key} inserted.")
@@ -112,18 +111,22 @@ class Master:
         key = cls.key_source & restriction
         n = len(key)
 
-        sets = cls & f"members = {n}"
-        key = sets.aggr(cls.Member * key, n="count(*)") & f"n = {n}"
+        candidates = cls & f"members = {n}"
+
+        members = getattr(cls, cls._part) & key
+
+        key = candidates.aggr(members, n="count(*)") & f"n = {n}"
 
         if key:
             return cls & key.fetch1(dj.key)
         else:
-            raise MissingError("Member set does not exist.")
+            raise MissingError("Set does not exist.")
 
     @property
     def members(self):
         key, n = self.fetch1(dj.key, "members")
-        members = self.Member & key
+
+        members = getattr(self, self._part) & key
 
         if len(members) == n:
             return members
@@ -133,34 +136,34 @@ class Master:
 
 def setup_set(cls, schema):
 
+    keys = tuple(cls.keys)
     name = str(cls.name)
     comment = str(cls.comment)
-    keys = tuple(cls.keys)
+    part_name = str(cls.part_name)
+
+    assert name != part_name
+
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
     foriegn_keys, context = foreigns(keys, schema)
 
-    member_attr = dict(
-        definition=member_definition(foriegn_keys),
-    )
-    Member = type("Member", (dj.Part,), member_attr)
+    Note = type("Note", (dj.Part,), {"definition": note_definition})
 
-    note_attr = dict(
-        definition=note_definition,
-    )
-    Note = type("Note", (dj.Part,), note_attr)
+    part = to_camel_case(part_name)
+    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys)})
 
-    master_attr = dict(
-        definition=master_definition(name, comment, length),
-        name=name,
-        comment=comment,
-        keys=keys,
-        length=length,
-        Member=Member,
-        Note=Note,
-        _key_source=None,
-    )
-    cls = type(cls.__name__, (Master, cls, dj.Lookup), master_attr)
+    attr = {
+        "definition": master_definition(name, comment, length),
+        "keys": keys,
+        "name": name,
+        "comment": comment,
+        "part_name": part_name,
+        "length": length,
+        "Note": Note,
+        "_part": part,
+        part: Part,
+    }
+    cls = type(cls.__name__, (Master, cls, dj.Lookup), attr)
     cls = schema(cls, context=context)
     return cls
