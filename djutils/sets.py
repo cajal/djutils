@@ -58,14 +58,14 @@ class Master:
         dict | None
             set key
         """
+        Part = getattr(cls, cls._part)
+
         keys = cls.key_source.restrict(restriction)
-        keys = keys.fetch(as_dict=True, order_by=keys.primary_key)
+        keys = keys.fetch(as_dict=True, order_by=Part.primary_key[1:])
         n = len(keys)
 
         key = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
         key = {f"{cls.name}_id": key_hash(key)}
-
-        Part = getattr(cls, cls._part)
 
         if cls & key:
             assert (cls & key).fetch1("members") == len(Part & key)
