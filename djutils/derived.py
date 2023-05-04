@@ -18,18 +18,18 @@ class Keys(metaclass=KeysMeta):
     def key_source(self):
         return reduce(mul, [key.proj() for key in self.keys])
 
-    def __init__(self, keys=None):
-        self._keys = [] if keys is None else list(keys)
+    def __init__(self, restriction=[]):
+        self.restriction = dj.AndList(restriction)
+        self._key = None
 
     @property
     def key(self):
-        if self._keys:
-            return self.key_source & dj.AndList(self._keys)
-        else:
-            return self.key_source
+        if self._key is None:
+            self._key = self.key_source & self.restriction
+        return self._key
 
     def __and__(self, key):
-        return self.__class__(self._keys + [key])
+        return self.__class__([*self.restriction, key])
 
     def __len__(self):
         return len(self.key)
@@ -37,8 +37,8 @@ class Keys(metaclass=KeysMeta):
     def __bool__(self):
         return len(self.key) > 0
 
-    def _repr_html_(self):
-        return self.key._repr_html_()
+    def __repr__(self):
+        return f"{len(self):,} x {self.key.primary_key}"
 
 
 def keys(cls):
