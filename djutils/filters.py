@@ -2,19 +2,19 @@ from functools import wraps
 from .links import setup_link, setup_link_set
 
 
-def decorate_filter(filt, filt_type):
+def decorate_filter(filt, ftype):
     """Decorator verifies filter keys"""
 
     @wraps(filt)
     def _filt(self, key):
 
-        if not (isinstance(key, filt_type) or key is filt_type):
-            raise TypeError(f"Filter input must be {filt_type.__name__} instance or class.")
+        if not (isinstance(key, ftype) or key is ftype):
+            raise TypeError(f"Filter input must be {ftype.__name__} instance or class.")
 
         key = filt(self, key)
 
-        if not (isinstance(key, filt_type) or key is filt_type):
-            raise TypeError(f"Filter output must be {filt_type.__name__} instance or class.")
+        if not (isinstance(key, ftype) or key is ftype):
+            raise TypeError(f"Filter output must be {ftype.__name__} instance or class.")
 
         return key
 
@@ -69,7 +69,7 @@ class FilterLinkSet:
 
 
 def setup_filter(cls):
-    filt = decorate_filter(cls.filter, cls.filter_type)
+    filt = decorate_filter(cls.filter, cls.ftype)
     return type(
         cls.__name__,
         (cls, Filter),
@@ -86,7 +86,7 @@ def setup_filter_link(cls, schema):
             raise TypeError("Provided filter is not a subclass of Filter.")
 
     for filt in filts[1:]:
-        if filt.filter_type != filts[0].filter_type:
+        if filt.ftype != filts[0].ftype:
             raise TypeError("Filter type mismatch.")
 
     cls = type(cls.__name__, (cls, FilterLink), dict())
