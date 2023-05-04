@@ -1,4 +1,3 @@
-import datajoint as dj
 from functools import wraps
 from .links import setup_link
 from .sets import setup_set

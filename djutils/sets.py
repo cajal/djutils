@@ -1,9 +1,8 @@
 import datajoint as dj
-from datajoint.hash import key_hash
-from datajoint.utils import user_choice
 from operator import mul
 from functools import reduce
 from .context import foreigns
+from .utils import key_hash, user_choice
 from .errors import MissingError
 from .logging import logger
 

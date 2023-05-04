@@ -1,9 +1,8 @@
 import os
 import datajoint as dj
-from datajoint.hash import key_hash
-from datajoint.utils import from_camel_case, user_choice
 from shutil import rmtree
 from .rows import row_method
+from .utils import key_hash, from_camel_case, user_choice
 from .logging import logger
 
 
