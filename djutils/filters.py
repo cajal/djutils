@@ -79,7 +79,7 @@ def setup_filter(cls):
 
 def setup_filter_link(cls, schema):
 
-    filts = tuple(cls.filters)
+    filts = tuple(cls.links)
 
     for filt in filts:
         if not issubclass(filt, Filter):
@@ -89,11 +89,7 @@ def setup_filter_link(cls, schema):
         if filt.filter_type != filts[0].filter_type:
             raise TypeError("Filter type mismatch.")
 
-    cls = type(
-        cls.__name__,
-        (cls, FilterLink),
-        dict(links=filts),
-    )
+    cls = type(cls.__name__, (cls, FilterLink), dict())
     return setup_link(cls, schema)
 
 
