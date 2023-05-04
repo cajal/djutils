@@ -4,7 +4,7 @@ from datajoint import DataJointError
 
 
 class class_property:
-    """decorator that turns a class method into a property"""
+    """Decorator that turns a class method into a property"""
 
     def __init__(self, f):
         self.f = f
