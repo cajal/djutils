@@ -62,8 +62,9 @@ class FilterLinkSet:
         dj.UserTable
             restricted tuples
         """
-        for key in self.members.fetch("KEY", order_by="member_id"):
-            tuples = (self.filter_link & key).filter(tuples)
+        for key in self.members.fetch("KEY", order_by=self.link.primary_key):
+
+            tuples = (self.link & key).filter(tuples)
 
         return tuples
 
