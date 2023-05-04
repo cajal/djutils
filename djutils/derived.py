@@ -20,7 +20,7 @@ class key_property:
             elif isinstance(instance, dj.Table):
                 restriction = instance
             else:
-                raise TypeError("key_property can only be applied to Keys or UserTable methods")
+                raise TypeError("key_property can only be applied to Keys or Table methods")
 
             for key in self.keys:
                 if len(key & restriction) != 1:
