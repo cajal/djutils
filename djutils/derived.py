@@ -38,7 +38,7 @@ class KeysMeta(type):
         return cls() & arg
 
     def __getattribute__(cls, name):
-        if name in ["key_source", "primary_key"]:
+        if name in ["keys", "key_source", "primary_key"]:
             return cls().__getattribute__(name)
         else:
             return super().__getattribute__(name)
@@ -50,6 +50,10 @@ class Keys(metaclass=KeysMeta):
     def __init__(self, restriction=[]):
         self.restriction = dj.AndList(restriction)
         self._key = None
+
+    @property
+    def key_source(self):
+        return reduce(mul, [key.proj() for key in self.key_list])
 
     @property
     def key(self):
@@ -71,9 +75,9 @@ class Keys(metaclass=KeysMeta):
         return len(self.key) > 0
 
     def __repr__(self):
-        return f"{len(self):,} x {self.key.primary_key}"
+        return f"{len(self):,} x {self.primary_key}"
 
 
 def keys(cls):
-    assert isinstance(cls.key_source, property)
-    return type(cls.__name__, (cls, Keys), dict(keys=keys))
+    assert isinstance(cls.key_list, property)
+    return type(cls.__name__, (cls, Keys), dict())
