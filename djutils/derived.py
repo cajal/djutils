@@ -37,13 +37,15 @@ class KeysMeta(type):
     def __and__(cls, arg):
         return cls() & arg
 
+    def __getattribute__(cls, name):
+        if name in ["key_source", "primary_key"]:
+            return cls().__getattribute__(name)
+        else:
+            return super().__getattribute__(name)
+
 
 class Keys(metaclass=KeysMeta):
     """Derived Keys"""
-
-    @class_property
-    def key_source(self):
-        return reduce(mul, [key.proj() for key in self.keys])
 
     def __init__(self, restriction=[]):
         self.restriction = dj.AndList(restriction)
@@ -54,6 +56,10 @@ class Keys(metaclass=KeysMeta):
         if self._key is None:
             self._key = self.key_source & self.restriction
         return self._key
+
+    @property
+    def primary_key(self):
+        return self.key_source.primary_key
 
     def __and__(self, key):
         return self.__class__([*self.restriction, key])
@@ -69,5 +75,5 @@ class Keys(metaclass=KeysMeta):
 
 
 def keys(cls):
-    keys = tuple(cls.keys)
+    assert isinstance(cls.key_source, property)
     return type(cls.__name__, (cls, Keys), dict(keys=keys))
