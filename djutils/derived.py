@@ -38,7 +38,7 @@ class KeysMeta(type):
         return cls() & arg
 
     def __getattribute__(cls, name):
-        if name in ["keys", "key_source", "primary_key"]:
+        if name in ["key_list", "key_source", "primary_key"]:
             return cls().__getattribute__(name)
         else:
             return super().__getattribute__(name)
