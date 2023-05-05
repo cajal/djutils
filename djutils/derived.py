@@ -54,7 +54,7 @@ class Keys(metaclass=KeysMeta):
     @property
     def key(self):
         if self._key is None:
-            self._key = self.key_source & self.restriction
+            self._key = (self.key_source & self.restriction).proj()
         return self._key
 
     @property
