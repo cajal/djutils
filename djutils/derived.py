@@ -31,7 +31,6 @@ class key_property:
         return property(_method)
 
 
-
 class KeysMeta(type):
     """Keys Metaclass"""
 
