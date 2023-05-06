@@ -47,7 +47,7 @@ class Set:
         return cls.key_source.primary_key
 
     @class_property
-    def order_by(cls):
+    def order(cls):
         return [f"{key} ASC" for key in cls.member_key]
 
     @property
@@ -74,7 +74,7 @@ class Set:
         list[dict]
             ordered tuples that comprise the set
         """
-        return self.members.fetch(*self.member_key, as_dict=True, order_by=self.order_by)
+        return self.members.fetch(*self.member_key, as_dict=True, order_by=self.order)
 
     @classmethod
     def fill(cls, restriction, note=None, *, prompt=True, silent=False):
@@ -95,7 +95,7 @@ class Set:
         Part = getattr(cls, cls._part)
 
         keys = cls.key_source.restrict(restriction)
-        keys = keys.fetch(as_dict=True, order_by=cls.order_by)
+        keys = keys.fetch(as_dict=True, order_by=cls.order)
         n = len(keys)
 
         key = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
