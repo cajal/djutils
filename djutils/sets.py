@@ -1,8 +1,9 @@
 import datajoint as dj
+import pandas as pd
 from operator import mul
 from functools import reduce
 from .context import foreigns
-from .utils import key_hash, user_choice, to_camel_case
+from .utils import class_property, key_hash, user_choice, to_camel_case
 from .errors import MissingError
 from .logging import logger
 
@@ -37,10 +38,18 @@ note_definition = """
     """
 
 
-class Master:
-    @property
-    def key_source(self):
-        return reduce(mul, [key.proj() for key in self.keys])
+class Set:
+    @class_property
+    def key_source(cls):
+        return reduce(mul, [key.proj() for key in cls.keys])
+
+    @class_property
+    def member_key(cls):
+        return cls.key_source.primary_key
+
+    @class_property
+    def order_by(cls):
+        return [f"{key} ASC" for key in cls.member_key]
 
     @classmethod
     def fill(cls, restriction, note=None, *, prompt=True, silent=False):
@@ -61,7 +70,7 @@ class Master:
         Part = getattr(cls, cls._part)
 
         keys = cls.key_source.restrict(restriction)
-        keys = keys.fetch(as_dict=True, order_by=Part.primary_key[1:])
+        keys = keys.fetch(as_dict=True, order_by=cls.order_by)
         n = len(keys)
 
         key = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
@@ -105,16 +114,14 @@ class Master:
 
         Returns
         -------
-        dj.Lookup
-            single tuple that matches restriction
+        Set
+            tuple that matches restriction
         """
         key = cls.key_source & restriction
         n = len(key)
 
         candidates = cls & f"members = {n}"
-
         members = getattr(cls, cls._part) & key
-
         key = candidates.aggr(members, n="count(*)") & f"n = {n}"
 
         if key:
@@ -124,14 +131,30 @@ class Master:
 
     @property
     def members(self):
+        """
+        Returns
+        -------
+        Set.Part
+            tuples that comprise the set
+        """
         key, n = self.fetch1(dj.key, "members")
-
         members = getattr(self, self._part) & key
 
         if len(members) == n:
             return members
         else:
             raise MissingError("Members are missing.")
+
+    @property
+    def frame(self):
+        """
+        Returns
+        -------
+        pandas.DataFrame
+            ordered tuples that comprise the set
+        """
+        keys = self.members.fetch(*self.member_key, as_dict=True, order_by=self.order_by)
+        return pd.DataFrame(keys)
 
 
 def setup_set(cls, schema):
@@ -164,6 +187,6 @@ def setup_set(cls, schema):
         "_part": part,
         part: Part,
     }
-    cls = type(cls.__name__, (Master, cls, dj.Lookup), attr)
+    cls = type(cls.__name__, (Set, cls, dj.Lookup), attr)
     cls = schema(cls, context=context)
     return cls
