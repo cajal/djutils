@@ -29,7 +29,7 @@ def part_definition(foreign):
     )
 
 
-class Link:
+class Link(dj.Lookup):
     @classmethod
     def fill(cls):
         """Inserts tuples into self and part tables"""
@@ -162,7 +162,7 @@ def setup_link(cls, schema):
         )
         master_attr[part] = type(part, (Part,), part_attr)
 
-    cls = type(cls.__name__, (Link, cls, dj.Lookup), master_attr)
+    cls = type(cls.__name__, (cls, Link), master_attr)
     cls = schema(cls, context=context)
     return cls
 

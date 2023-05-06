@@ -37,7 +37,7 @@ note_definition = """
     """
 
 
-class Set:
+class Set(dj.Lookup):
     @class_property
     def key_source(cls):
         return reduce(mul, [key.proj() for key in cls.keys])
@@ -185,6 +185,6 @@ def setup_set(cls, schema):
         "_part": part,
         part: Part,
     }
-    cls = type(cls.__name__, (Set, cls, dj.Lookup), attr)
+    cls = type(cls.__name__, (cls, Set), attr)
     cls = schema(cls, context=context)
     return cls
