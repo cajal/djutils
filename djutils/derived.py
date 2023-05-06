@@ -20,7 +20,7 @@ class key_property:
             elif isinstance(instance, dj.Table):
                 restriction = instance
             else:
-                raise TypeError("key_property can only be applied to Keys or Table methods")
+                raise TypeError("key_property only works on subclasses of djutils.Keys or datajoint.Table")
 
             for key in self.keys:
                 if len(key & restriction) != 1:
@@ -29,6 +29,32 @@ class key_property:
             return method(instance)
 
         return property(_method)
+
+
+class key_method:
+    """Decorator that ensures that keys are restricted to a single item before calling method"""
+
+    def __init__(self, *keys):
+        self.keys = list(keys)
+
+    def __call__(self, method):
+        @wraps(method)
+        def _method(instance, *args, **kwargs):
+
+            if isinstance(instance, Keys):
+                restriction = instance.key
+            elif isinstance(instance, dj.Table):
+                restriction = instance
+            else:
+                raise TypeError("key_method only works on subclasses of djutils.Keys or datajoint.Table")
+
+            for key in self.keys:
+                if len(key & restriction) != 1:
+                    raise RestrictionError(f"{key.__name__} must be restricted to a single tuple.")
+
+            return method(instance, *args, **kwargs)
+
+        return _method
 
 
 class KeysMeta(type):
