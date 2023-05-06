@@ -156,30 +156,20 @@ class Set(dj.Lookup):
 
 
 def setup_set(cls, schema):
-
-    keys = tuple(cls.keys)
-    name = str(cls.name)
-    comment = str(cls.comment)
-    part_name = str(cls.part_name)
-
-    assert name != part_name
+    assert cls.name != cls.part_name
 
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
-    foriegn_keys, context = foreigns(keys, schema)
+    foriegn_keys, context = foreigns(cls.keys, schema)
+
+    part = to_camel_case(cls.part_name)
+    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys)})
 
     Note = type("Note", (dj.Part,), {"definition": note_definition})
 
-    part = to_camel_case(part_name)
-    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys)})
-
     attr = {
-        "definition": master_definition(name, comment, length),
-        "keys": keys,
-        "name": name,
-        "comment": comment,
-        "part_name": part_name,
+        "definition": master_definition(cls.name, cls.comment, length),
         "length": length,
         "Note": Note,
         "_part": part,

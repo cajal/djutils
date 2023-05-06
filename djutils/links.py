@@ -33,25 +33,17 @@ class Link(dj.Lookup):
     @classmethod
     def fill(cls):
         """Inserts tuples into self and part tables"""
-        for table in cls._tables:
+        for table in cls.tables:
             getattr(cls, table).fill()
 
     @classmethod
     def clean(cls):
         """Deletes tuples from self that are missing in links"""
         keys = []
-        for table in cls._tables:
+        for table in cls.tables:
             keys += getattr(cls, table).fetch(dj.key)
 
         (cls - keys).delete()
-
-    @property
-    def links(self):
-        """Restricted linked tables"""
-        link_type = f"{self.name}_type"
-        types = (dj.U(link_type) & self).fetch(link_type)
-        parts = (getattr(self, t) & self for t in types)
-        return tuple(part.link for part in parts)
 
     @property
     def link(self):
@@ -59,12 +51,9 @@ class Link(dj.Lookup):
 
         IMPORTANT: tuples must be restricted to a single type
         """
-        links = self.links
-
-        if len(links) != 1:
-            raise ValueError("Must restrict to exactly one link type.")
-
-        return links[0]
+        link_type = self.fetch1(f"{self.name}_type")
+        part = getattr(self, link_type) & self
+        return part.link
 
     @classmethod
     def get(cls, link_type, link_key=None):
@@ -132,35 +121,33 @@ class Part(dj.Part):
 
 def setup_link(cls, schema):
 
-    name = str(cls.name)
-    comment = str(cls.comment)
-    links = tuple(cls.links)
-    tables = tuple(link.__name__ for link in links)
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
     master_attr = dict(
-        definition=master_definition(name, comment, length),
-        name=name,
-        comment=comment,
+        definition=master_definition(cls.name, cls.comment, length),
         length=length,
-        _links=links,
-        _tables=tables,
     )
 
-    keys, context = foreigns(links, schema)
+    keys, context = foreigns(cls.links, schema)
+
+    tables = []
     parts = []
 
-    for key, _link in zip(keys, links):
+    for key, link in zip(keys, cls.links):
+
+        tables.append(link.__name__)
 
         part = key.split(".")[-1]
         assert part not in parts
 
         part_attr = dict(
             definition=part_definition(key),
-            _link=_link,
+            _link=link,
         )
         master_attr[part] = type(part, (Part,), part_attr)
+
+    master_attr["tables"] = tables
 
     cls = type(cls.__name__, (cls, Link), master_attr)
     cls = schema(cls, context=context)

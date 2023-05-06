@@ -42,9 +42,6 @@ def decorate_property(prop, name):
 
 def setup_method(cls, schema):
 
-    name = str(cls.name)
-    comment = str(cls.comment)
-
     names = []
     methods = []
     for x in dir(cls):
@@ -67,9 +64,7 @@ def setup_method(cls, schema):
         methods.append(attr)
 
     attr = dict(
-        definition=definition(name, comment),
-        name=name,
-        comment=comment,
+        definition=definition(cls.name, cls.comment),
         contents=[[name] for name in names],
         **dict(zip(names, methods)),
     )
