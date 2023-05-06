@@ -42,8 +42,9 @@ def decorate_property(prop, name):
 
 def setup_method(cls, schema):
 
-    names = []
-    methods = []
+    contents = []
+    methods = {}
+
     for x in dir(cls):
 
         if x.startswith("_"):
@@ -60,13 +61,13 @@ def setup_method(cls, schema):
         else:
             continue
 
-        names.append(x)
-        methods.append(attr)
+        contents.append([x])
+        methods[x] = attr
 
     attr = dict(
         definition=definition(cls.name, cls.comment),
-        contents=[[name] for name in names],
-        **dict(zip(names, methods)),
+        contents=contents,
+        **methods,
     )
 
     cls = type(cls.__name__, (cls, dj.Lookup), attr)
