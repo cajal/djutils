@@ -80,14 +80,12 @@ def setup_filter(cls):
 
 def setup_filter_link(cls, schema):
 
-    filts = tuple(cls.links)
-
-    for filt in filts:
+    for filt in cls.links:
         if not issubclass(filt, Filter):
             raise TypeError("Provided filter is not a subclass of Filter.")
 
-    for filt in filts[1:]:
-        if filt.ftype != filts[0].ftype:
+    for filt in cls.links[1:]:
+        if filt.ftype != cls.links[0].ftype:
             raise TypeError("Filter type mismatch.")
 
     cls = type(cls.__name__, (cls, FilterLink), dict())
