@@ -1,5 +1,4 @@
 import datajoint as dj
-import pandas as pd
 from operator import mul
 from functools import reduce
 from .context import foreigns
@@ -50,6 +49,32 @@ class Set:
     @class_property
     def order_by(cls):
         return [f"{key} ASC" for key in cls.member_key]
+
+    @property
+    def members(self):
+        """
+        Returns
+        -------
+        Set.Part
+            tuples that comprise the set
+        """
+        key, n = self.fetch1(dj.key, "members")
+        members = getattr(self, self._part) & key
+
+        if len(members) == n:
+            return members
+        else:
+            raise MissingError("Members are missing.")
+
+    @property
+    def ordered_keys(self):
+        """
+        Returns
+        -------
+        list[dict]
+            ordered tuples that comprise the set
+        """
+        return self.members.fetch(*self.member_key, as_dict=True, order_by=self.order_by)
 
     @classmethod
     def fill(cls, restriction, note=None, *, prompt=True, silent=False):
@@ -128,33 +153,6 @@ class Set:
             return cls & key.fetch1(dj.key)
         else:
             raise MissingError("Set does not exist.")
-
-    @property
-    def members(self):
-        """
-        Returns
-        -------
-        Set.Part
-            tuples that comprise the set
-        """
-        key, n = self.fetch1(dj.key, "members")
-        members = getattr(self, self._part) & key
-
-        if len(members) == n:
-            return members
-        else:
-            raise MissingError("Members are missing.")
-
-    @property
-    def frame(self):
-        """
-        Returns
-        -------
-        pandas.DataFrame
-            ordered tuples that comprise the set
-        """
-        keys = self.members.fetch(*self.member_key, as_dict=True, order_by=self.order_by)
-        return pd.DataFrame(keys)
 
 
 def setup_set(cls, schema):
