@@ -6,8 +6,8 @@ from .utils import key_hash, class_property, from_camel_case, user_choice
 from .logging import logger
 
 
-class FileMixin:
-    """File handling mixin"""
+class Filepath:
+    """File path handling"""
 
     @class_property
     def external_table(cls):
