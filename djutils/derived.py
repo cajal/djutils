@@ -24,7 +24,7 @@ class key_property:
 
             for key in self.keys:
                 if len(key & restriction) != 1:
-                    raise RestrictionError(f"Contains multiple tuples of {key.__name__}.")
+                    raise RestrictionError(f"{key.__name__} must be restricted to a single tuple.")
 
             return method(instance)
 
