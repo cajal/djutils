@@ -1,16 +1,20 @@
 import os
 import datajoint as dj
 from shutil import rmtree
-from .rows import row_method
-from .utils import key_hash, from_camel_case, user_choice
+from .rows import row_property
+from .utils import key_hash, class_property, from_camel_case, user_choice
 from .logging import logger
 
 
-class Files:
-    store = None
+class FileMixin:
+    """File handling mixin"""
+
+    @class_property
+    def external_table(cls):
+        return cls().external[cls.store] & f"filepath like '{cls.table_dir(relative=True)}%'"
 
     @classmethod
-    def table_dir(cls, create=False, *, root=None):
+    def table_dir(cls, create=False, relative=False):
         """
         Parameters
         ----------
@@ -22,21 +26,21 @@ class Files:
         str
             table directory
         """
-        if root is None:
-            if cls.store is None:
-                root = os.getcwd()
-            else:
-                root = dj.config["stores"][cls.store]["location"]
+        root = dj.config["stores"][cls.store]["location"]
 
-        table_dir = os.path.join(root, cls.database, from_camel_case(cls.__name__))
+        rel_dir = os.path.join(cls.database, from_camel_case(cls.__name__))
+        abs_dir = os.path.join(root, rel_dir)
 
-        if create and not os.path.exists(table_dir):
-            os.makedirs(table_dir)
+        if create and not os.path.exists(abs_dir):
+            os.makedirs(abs_dir)
 
-        return table_dir
+        if relative:
+            return rel_dir
+        else:
+            return abs_dir
 
     @classmethod
-    def tuple_dir(cls, key, create=False, *, root=None):
+    def tuple_dir(cls, key, create=False):
         """
         Parameters
         ----------
@@ -51,29 +55,28 @@ class Files:
             tuple directory
         """
         key = {k: key[k] for k in cls.primary_key}
-
-        tuple_dir = os.path.join(cls.table_dir(root=root), key_hash(key))
+        tuple_dir = os.path.join(cls.table_dir(), key_hash(key))
 
         if create and not os.path.exists(tuple_dir):
             os.makedirs(tuple_dir)
 
         return tuple_dir
 
-    @row_method
-    def dir(self, *, root=None):
+    @row_property
+    def dir(self):
         """
         Returns
         -------
         str
             tuple directory
         """
-        return self.tuple_dir(self.fetch1(dj.key), root=root)
+        return self.tuple_dir(self.fetch1(dj.key))
 
     @classmethod
-    def prune(cls, *, root=None):
+    def prune(cls):
         """Prunes the untracked files in the table_dir"""
 
-        table_dir = cls.table_dir(root=root)
+        table_dir = cls.table_dir()
 
         if not os.path.exists(table_dir):
             logger.info("Table directory does not exist. Nothing to prune.")
@@ -87,6 +90,8 @@ class Files:
             return
 
         if user_choice(f"Remove {n} paths in {table_dir}?") == "yes":
+
+            cls.external_table.delete(delete_external_files=False)
 
             for path in paths:
                 full_path = os.path.join(table_dir, path)
