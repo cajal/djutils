@@ -30,7 +30,7 @@ class Filepath:
         assert location == extern.spec["stage"]
 
         tablepath = cls._tablepath
-        keypath = key_hash({k: key[k] for k in cls.primary_key})
+        keypath = key_hash(key)
 
         folder = os.path.join(location, tablepath, keypath)
         if not os.path.exists(folder):
