@@ -1,6 +1,6 @@
-from .rows import rowproperty, rowmethod
 from .functions import merge
-from .derived import keys, key_property, key_method
+from .rows import rowmethod, rowproperty, cache_rowproperty
+from .derived import keys, keymethod, keyproperty
 from .files import Filepath
 from .errors import MissingError, RestrictionError
 from .schemas import Schema

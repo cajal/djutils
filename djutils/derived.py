@@ -4,7 +4,7 @@ from functools import reduce, wraps
 from .errors import RestrictionError
 
 
-class key_property:
+class keyproperty:
     """Decorator that ensures that keys are restricted to a single item before returning property"""
 
     def __init__(self, *keys):
@@ -30,7 +30,7 @@ class key_property:
         return property(_method)
 
 
-class key_method:
+class keymethod:
     """Decorator that ensures that keys are restricted to a single item before calling method"""
 
     def __init__(self, *keys):
