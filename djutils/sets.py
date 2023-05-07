@@ -20,12 +20,15 @@ def master_definition(name, comment, length):
     )
 
 
-def part_definition(foriegn_keys):
+def part_definition(foriegn_keys, name):
     return """
     -> master
     {foriegn_keys}
+    ---
+    {name}_index                    : int unsigned      # set index
     """.format(
         foriegn_keys="\n    ".join([f"-> {f}" for f in foriegn_keys]),
+        name=name,
     )
 
 
@@ -98,7 +101,7 @@ class Set(dj.Lookup):
         keys = keys.fetch(as_dict=True, order_by=cls.order)
         n = len(keys)
 
-        key = dict([[i, key_hash(k)] for i, k in enumerate(keys)])
+        key = {i: key_hash(k) for i, k in enumerate(keys)}
         key = {f"{cls.name}_id": key_hash(key)}
 
         if cls & key:
@@ -110,7 +113,9 @@ class Set(dj.Lookup):
         elif not prompt or user_choice(f"Insert set with {n} keys?") == "yes":
 
             cls.insert1(dict(key, members=n))
-            Part.insert([dict(**key, **k) for k in keys])
+
+            index = f"{cls.name}_index"
+            Part.insert([{index: i, **k, **key} for i, k in enumerate(keys)])
 
             if not silent:
                 logger.info(f"{key} inserted.")
@@ -156,15 +161,13 @@ class Set(dj.Lookup):
 
 
 def setup_set(cls, schema):
-    assert cls.name != cls.part_name
-
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
     foriegn_keys, context = foreigns(cls.keys, schema)
 
     part = to_camel_case(cls.part_name)
-    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys)})
+    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys, cls.name)})
 
     Note = type("Note", (dj.Part,), {"definition": note_definition})
 
