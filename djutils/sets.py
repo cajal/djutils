@@ -2,7 +2,7 @@ import datajoint as dj
 from operator import mul
 from functools import reduce
 from .context import foreigns
-from .utils import class_property, key_hash, user_choice, to_camel_case
+from .utils import classproperty, key_hash, user_choice, to_camel_case
 from .errors import MissingError
 from .logging import logger
 
@@ -38,15 +38,15 @@ note_definition = """
 
 
 class Set(dj.Lookup):
-    @class_property
+    @classproperty
     def key_source(cls):
         return reduce(mul, [key.proj() for key in cls.keys])
 
-    @class_property
+    @classproperty
     def member_key(cls):
         return cls.key_source.primary_key
 
-    @class_property
+    @classproperty
     def order(cls):
         return [f"{key} ASC" for key in cls.member_key]
 

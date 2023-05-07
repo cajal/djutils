@@ -1,108 +1,89 @@
 import os
-import datajoint as dj
-from shutil import rmtree
-from .rows import row_property
-from .utils import key_hash, class_property, from_camel_case, user_choice
-from .logging import logger
+from collections import deque
+from .rows import rowmethod
+from .utils import key_hash, classproperty, from_camel_case, user_choice
 
 
 class Filepath:
     """File path handling"""
 
-    @class_property
-    def external_table(cls):
-        return cls().external[cls.store] & f"filepath like '{cls.table_dir(relative=True)}%'"
+    @classproperty
+    def _checksums(cls):
+        if not hasattr(cls, "_checksums_"):
+            cls._checksums_ = deque(maxlen=os.getenv("DJUTILS_FILEPATH_CACHE", 1024))
+        return cls._checksums_
+
+    @classproperty
+    def _tablepath(cls):
+        return os.path.join(cls.database, from_camel_case(cls.__name__))
+
+    @classproperty
+    def _filepaths(cls):
+        return {k: v for k, v in cls.heading.attributes.items() if v.is_filepath}
 
     @classmethod
-    def table_dir(cls, create=False, relative=False):
-        """
-        Parameters
-        ----------
-        create : bool
-            create the directory
+    def createpath(cls, key, attr, suffix=None):
+        store = cls._filepaths[attr].store
+        extern = cls().external[store]
 
-        Returns
-        -------
-        str
-            table directory
-        """
-        root = dj.config["stores"][cls.store]["location"]
+        location = extern.spec["location"]
+        assert location == extern.spec["stage"]
 
-        rel_dir = os.path.join(cls.database, from_camel_case(cls.__name__))
-        abs_dir = os.path.join(root, rel_dir)
+        tablepath = cls._tablepath
+        keypath = key_hash({k: key[k] for k in cls.primary_key})
 
-        if create and not os.path.exists(abs_dir):
-            os.makedirs(abs_dir)
+        folder = os.path.join(location, tablepath, keypath)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
 
-        if relative:
-            return rel_dir
-        else:
-            return abs_dir
+        filename = attr if suffix is None else f"{attr}.{suffix}"
+        filepath = os.path.join(folder, filename)
 
-    @classmethod
-    def tuple_dir(cls, key, create=False):
-        """
-        Parameters
-        ----------
-        key : dict
-            primary key of the table
-        create : bool
-            create the directory
+        return filepath
 
-        Returns
-        -------
-        str
-            tuple directory
-        """
-        key = {k: key[k] for k in cls.primary_key}
-        tuple_dir = os.path.join(cls.table_dir(), key_hash(key))
+    @rowmethod
+    def filepath(self, attr, checksum=True):
+        """Fetches the filepath with optional checksum"""
 
-        if create and not os.path.exists(tuple_dir):
-            os.makedirs(tuple_dir)
+        store = self._filepaths[attr].store
+        extern = self.external[store]
 
-        return tuple_dir
+        key = self.proj(hash=attr)
+        filepath = (extern & key).fetch1("filepath")
+        filepath = os.path.join(extern.spec["location"], filepath)
 
-    @row_property
-    def dir(self):
-        """
-        Returns
-        -------
-        str
-            tuple directory
-        """
-        return self.tuple_dir(self.fetch1(dj.key))
+        if checksum and filepath not in self._checksums:
+            _filepath = self.fetch1(attr)
+            assert filepath == _filepath
+            self._checksums.append(filepath)
+
+        return filepath
 
     @classmethod
     def prune(cls):
-        """Prunes the untracked files in the table_dir"""
+        """Deletes the untracked filepaths and directories"""
 
-        table_dir = cls.table_dir()
-
-        if not os.path.exists(table_dir):
-            logger.info("Table directory does not exist. Nothing to prune.")
+        if user_choice(f"Are you sure you want to prune {cls.__name__}?") != "yes":
             return
 
-        paths = set(os.listdir(table_dir)) - set(map(key_hash, cls.fetch(dj.key)))
-        n = len(paths)
+        tablepath = cls._tablepath
+        stores = {v.store for v in cls._filepaths.values()}
+        extern = cls().external
+        key = f'filepath like "{tablepath}%"'
 
-        if not n:
-            logger.info("No untracked paths to remove")
-            return
+        for store in stores:
 
-        if user_choice(f"Remove {n} paths in {table_dir}?") == "yes":
+            (extern[store] & key).delete(delete_external_files=True)
 
-            cls.external_table.delete(delete_external_files=False)
+            root = os.path.join(extern[store].spec["location"], tablepath)
+            deleted = set()
 
-            for path in paths:
-                full_path = os.path.join(table_dir, path)
+            for dirpath, dirnames, filenames in os.walk(root, topdown=False):
 
-                if os.path.isdir(full_path):
-                    rmtree(full_path)
+                dirs = (os.path.join(dirpath, _) for _ in dirnames)
+                dirs = filter(lambda x: x not in deleted, dirs)
+                dirs = list(dirs)
 
-                else:
-                    os.remove(full_path)
-
-            logger.info(f"{n} paths removed.")
-
-        else:
-            logger.info(f"{n} paths not removed.")
+                if not filenames and not dirs:
+                    os.rmdir(dirpath)
+                    deleted.add(dirpath)

@@ -3,7 +3,7 @@ import re
 from datajoint import DataJointError
 
 
-class class_property:
+class classproperty:
     """Decorator that turns a class method into a property"""
 
     def __init__(self, f):

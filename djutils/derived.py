@@ -1,7 +1,6 @@
 import datajoint as dj
 from operator import mul
 from functools import reduce, wraps
-from .utils import class_property
 from .errors import RestrictionError
 
 

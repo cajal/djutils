@@ -2,7 +2,7 @@ from functools import wraps
 from .errors import RestrictionError
 
 
-def row_property(method):
+def rowproperty(method):
     """Decorator that ensures that the table is restricted to a single row before returning property"""
 
     @wraps(method)
@@ -16,7 +16,7 @@ def row_property(method):
     return property(_method)
 
 
-def row_method(method):
+def rowmethod(method):
     """Decorator that ensures that the table is restricted to a single row before calling method"""
 
     @wraps(method)
