@@ -43,7 +43,7 @@ class Filepath:
 
     @rowmethod
     def filepath(self, attr, checksum=True):
-        """Fetches the filepath with optional checksum"""
+        """Fetches the filepath with optional checksum verification"""
 
         store = self._filepaths[attr].store
         extern = self.external[store]
