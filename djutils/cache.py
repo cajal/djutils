@@ -1,4 +1,6 @@
 from collections import OrderedDict
+from datajoint import Table
+from .derived import Keys
 from .utils import key_hash
 
 
@@ -17,17 +19,28 @@ class RowPropertyCache:
     def __init__(self, *tables, maxsize=None):
         self.cache = Cache(maxsize)
         self.tables = tables
+
         if self.tables:
             self.selective = True
+            for table in self.tables:
+                if not issubclass(table, (Table, Keys)):
+                    raise TypeError("Cached table must either be a subclass of datajoint.Table or djutils.Keys")
         else:
             self.selective = False
 
     def get(self, row, method):
         cls = row.__class__
+
         if self.selective and cls not in self.tables:
             return method(row)
 
-        key = key_hash(dict(row.fetch1("KEY"), _class=cls, _method=method))
+        if issubclass(cls, Table):
+            key = key_hash(dict(row.fetch1("KEY"), _class=cls, _method=method))
+        elif issubclass(cls, Keys):
+            key = key_hash(dict(row.key.fetch1("KEY"), _class=cls, _method=method))
+        else:
+            raise TypeError("Cached row property only works on subclasses of datajoint.Table or djutils.Keys")
+
         try:
             ret = self.cache[key]
         except KeyError:

@@ -1,4 +1,4 @@
-import datajoint as dj
+from datajoint import Table, AndList
 from operator import mul
 from functools import reduce, wraps
 from .errors import RestrictionError
@@ -16,10 +16,10 @@ class keyproperty:
 
             if isinstance(instance, Keys):
                 restriction = instance.key
-            elif isinstance(instance, dj.Table):
+            elif isinstance(instance, Table):
                 restriction = instance
             else:
-                raise TypeError("key_property only works on subclasses of djutils.Keys or datajoint.Table")
+                raise TypeError("keyproperty only works on subclasses of djutils.Keys or datajoint.Table")
 
             for key in self.keys:
                 if len(key & restriction) != 1:
@@ -42,10 +42,10 @@ class keymethod:
 
             if isinstance(instance, Keys):
                 restriction = instance.key
-            elif isinstance(instance, dj.Table):
+            elif isinstance(instance, Table):
                 restriction = instance
             else:
-                raise TypeError("key_method only works on subclasses of djutils.Keys or datajoint.Table")
+                raise TypeError("keymethod only works on subclasses of djutils.Keys or datajoint.Table")
 
             for key in self.keys:
                 if len(key & restriction) != 1:
@@ -73,7 +73,7 @@ class Keys(metaclass=KeysMeta):
     """Derived Keys"""
 
     def __init__(self, restriction=[]):
-        self.restriction = dj.AndList(restriction)
+        self.restriction = AndList(restriction)
         self._key = None
 
     @property
