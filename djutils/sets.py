@@ -1,7 +1,7 @@
 import datajoint as dj
 from operator import mul
 from functools import reduce
-from .context import foreigns
+from .resolve import foreigns
 from .utils import classproperty, key_hash, user_choice, to_camel_case
 from .errors import MissingError
 from .logging import logger

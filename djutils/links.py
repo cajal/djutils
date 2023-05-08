@@ -1,5 +1,5 @@
 import datajoint as dj
-from .context import foreigns
+from .resolve import foreigns
 from .utils import key_hash
 from .sets import setup_set
 from .logging import logger

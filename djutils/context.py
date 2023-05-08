@@ -1,49 +1,23 @@
-import datajoint as dj
+from contextlib import contextmanager
+from . import cache
 
 
-def foreigns(tables, schema):
-    """
+@contextmanager
+def cache_rowproperty(*tables, maxsize=None):
+    """Enables cacheing of row properties
+
     Parameters
     ----------
-    tables : Sequence[type(dj.UserTable)]
-        tables to be referenced
-
-    schema : dj.Schema
-        schema that houses the referencing table
-
-    Returns
-    -------
-    list[str]:
-        list of foreign keys
-    dict[str, type(dj.UserTable) | dj.VirtualModule]
-        context for schema call
+    tables : type(dj.UserTable)
+        if no tables are provided, the the row properties of all tables are cached.
+        if tables are provided, then the row properties of provided tables only are cached.
+    maxsize : int | none
+        maximum number of cache elements
     """
-    context = dict()
-    foreigns = []
+    assert cache.rowproperty is None, "Row properties are already being cached."
 
-    for table in tables:
-
-        database = table.database
-
-        if database == schema.database:
-
-            if issubclass(table, dj.Part):
-                foreign = f"{table._master.__name__}.{table.__name__}"
-                context[table._master.__name__] = table._master
-            else:
-                foreign = table.__name__
-                context[table.__name__] = table
-
-        else:
-            if issubclass(table, dj.Part):
-                foreign = f"{database}.{table._master.__name__}.{table.__name__}"
-            else:
-                foreign = f"{database}.{table.__name__}"
-
-            if database not in context:
-                context[database] = dj.create_virtual_module(database, database)
-
-        assert foreign not in foreigns
-        foreigns.append(foreign)
-
-    return foreigns, context
+    cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
+    try:
+        yield
+    finally:
+        cache.rowproperty = None

@@ -36,20 +36,20 @@ class Schema(dj.Schema):
     def link(self, cls):
         return setup_link(cls, self)
 
-    def link_set(self, cls):
+    def linkset(self, cls):
         return setup_link_set(cls, self)
 
-    def filter_lookup(self, cls, *, context=None):
+    def lookupfilter(self, cls, *, context=None):
         context = context or self.context or inspect.currentframe().f_back.f_locals
         cls = setup_filter(cls)
         return self.lookup(cls, context=context)
 
-    def filter_method(self, cls):
+    def methodfilter(self, cls):
         cls = setup_filter(cls)
         return self.method(cls)
 
-    def filter_link(self, cls):
+    def filterlink(self, cls):
         return setup_filter_link(cls, self)
 
-    def filter_link_set(self, cls):
+    def filterlinkset(self, cls):
         return setup_filter_link_set(cls, self)
