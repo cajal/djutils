@@ -62,7 +62,7 @@ class Set(dj.Lookup):
             tuples that comprise the set
         """
         key, n = self.fetch1(dj.key, "members")
-        members = getattr(self, self._part) & key
+        members = self.Member & key
 
         if len(members) == n:
             return members
@@ -95,8 +95,6 @@ class Set(dj.Lookup):
         dict | None
             set key
         """
-        Part = getattr(cls, cls._part)
-
         keys = cls.key_source.restrict(restriction)
         keys = keys.fetch(as_dict=True, order_by=cls.order)
         n = len(keys)
@@ -105,7 +103,7 @@ class Set(dj.Lookup):
         key = {f"{cls.name}_id": key_hash(key)}
 
         if cls & key:
-            assert (cls & key).fetch1("members") == len(Part & key)
+            assert (cls & key).fetch1("members") == len(cls.Member & key)
 
             if not silent:
                 logger.info(f"{key} already exists.")
@@ -115,7 +113,7 @@ class Set(dj.Lookup):
             cls.insert1(dict(key, members=n))
 
             index = f"{cls.name}_index"
-            Part.insert([{index: i, **k, **key} for i, k in enumerate(keys)])
+            cls.Member.insert([{index: i, **k, **key} for i, k in enumerate(keys)])
 
             if not silent:
                 logger.info(f"{key} inserted.")
@@ -151,7 +149,7 @@ class Set(dj.Lookup):
         n = len(key)
 
         candidates = cls & f"members = {n}"
-        members = getattr(cls, cls._part) & key
+        members = cls.Member & key
         key = candidates.aggr(members, n="count(*)") & f"n = {n}"
 
         if key:
@@ -166,17 +164,21 @@ def setup_set(cls, schema):
 
     foriegn_keys, context = foreigns(cls.keys, schema)
 
-    part = to_camel_case(cls.part_name)
-    Part = type(part, (dj.Part,), {"definition": part_definition(foriegn_keys, cls.name)})
-
-    Note = type("Note", (dj.Part,), {"definition": note_definition})
-
+    Member = type(
+        "Member",
+        (dj.Part,),
+        {"definition": part_definition(foriegn_keys, cls.name)},
+    )
+    Note = type(
+        "Note",
+        (dj.Part,),
+        {"definition": note_definition},
+    )
     attr = {
         "definition": master_definition(cls.name, cls.comment, length),
         "length": length,
+        "Member": Member,
         "Note": Note,
-        "_part": part,
-        part: Part,
     }
     cls = type(cls.__name__, (cls, Set), attr)
     cls = schema(cls, context=context)
