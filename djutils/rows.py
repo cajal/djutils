@@ -31,7 +31,7 @@ def rowproperty(method):
         if cache.rowproperty is None:
             return method(self)
         else:
-            key = key_hash(dict(self.fetch1("KEY"), _class=self.__class__, _method=method.__name__))
+            key = key_hash(dict(self.fetch1("KEY"), _class=self.__class__, _method=method))
             try:
                 ret = cache.rowproperty[key]
             except KeyError:
