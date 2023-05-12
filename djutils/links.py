@@ -125,7 +125,7 @@ def setup_link(cls, schema):
     length = max(0, min(length, 32))
 
     master_attr = dict(
-        definition=master_definition(cls.name, cls.comment, length),
+        definition=master_definition(cls.name, getattr(cls, "comment", cls.name), length),
         length=length,
     )
 

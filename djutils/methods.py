@@ -65,7 +65,7 @@ def setup_method(cls, schema):
         methods[x] = attr
 
     attr = dict(
-        definition=definition(cls.name, cls.comment),
+        definition=definition(cls.name, getattr(cls, "comment", cls.name)),
         contents=contents,
         **methods,
     )

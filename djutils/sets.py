@@ -175,7 +175,7 @@ def setup_set(cls, schema):
         {"definition": note_definition},
     )
     attr = {
-        "definition": master_definition(cls.name, cls.comment, length),
+        "definition": master_definition(cls.name, getattr(cls, "comment", cls.name), length),
         "length": length,
         "Member": Member,
         "Note": Note,
