@@ -22,6 +22,11 @@ class Filepath:
         return {k: v for k, v in cls.heading.attributes.items() if v.is_filepath}
 
     @classmethod
+    def store(cls, attr):
+        store = cls._filepaths[attr].store
+        return cls().external[store]
+
+    @classmethod
     def createpath(cls, key, attr, suffix=None):
         store = cls._filepaths[attr].store
         extern = cls().external[store]
