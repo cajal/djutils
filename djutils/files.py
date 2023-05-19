@@ -75,7 +75,7 @@ class Filepath:
                     deleted.add(dirpath)
 
     @rowmethod
-    def filepath(self, attr, checksum=True):
+    def filepath(self, attr, *, checksum=True):
         """Fetches the filepath with optional checksum verification"""
 
         store = self._filepaths[attr].store
