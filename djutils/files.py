@@ -94,7 +94,7 @@ class Filepath:
 
     @rowmethod
     def replace(self, row, *, prompt=True):
-        """Replaces a row with optional checksum verification"""
+        """Replaces a row with optional user prompt"""
 
         stores = []
         keys = []
