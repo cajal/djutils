@@ -22,9 +22,8 @@ class Filepath:
         return {k: v for k, v in cls.heading.attributes.items() if v.is_filepath}
 
     @classmethod
-    def store(cls, attr):
-        store = cls._filepaths[attr].store
-        return cls().external[store]
+    def _key_path(cls, key):
+        return key_hash({k: key[k] for k in cls.primary_key})
 
     @classmethod
     def createpath(cls, key, attr, suffix=None):
@@ -35,7 +34,7 @@ class Filepath:
         assert location == extern.spec["stage"]
 
         tablepath = cls._tablepath
-        keypath = key_hash(key)
+        keypath = cls._key_path(key)
 
         folder = os.path.join(location, tablepath, keypath)
         if not os.path.exists(folder):
@@ -43,24 +42,6 @@ class Filepath:
 
         filename = attr if suffix is None else f"{attr}.{suffix}"
         filepath = os.path.join(folder, filename)
-
-        return filepath
-
-    @rowmethod
-    def filepath(self, attr, checksum=True):
-        """Fetches the filepath with optional checksum verification"""
-
-        store = self._filepaths[attr].store
-        extern = self.external[store]
-
-        key = self.proj(hash=attr)
-        filepath = (extern & key).fetch1("filepath")
-        filepath = os.path.join(extern.spec["location"], filepath)
-
-        if checksum and filepath not in self._checksums:
-            _filepath = self.fetch1(attr)
-            assert filepath == _filepath
-            self._checksums.append(filepath)
 
         return filepath
 
@@ -92,3 +73,46 @@ class Filepath:
                 if not filenames and not dirs:
                     os.rmdir(dirpath)
                     deleted.add(dirpath)
+
+    @rowmethod
+    def filepath(self, attr, checksum=True):
+        """Fetches the filepath with optional checksum verification"""
+
+        store = self._filepaths[attr].store
+        extern = self.external[store]
+
+        key = self.proj(hash=attr)
+        filepath = (extern & key).fetch1("filepath")
+        filepath = os.path.join(extern.spec["location"], filepath)
+
+        if checksum and filepath not in self._checksums:
+            _filepath = self.fetch1(attr)
+            assert filepath == _filepath
+            self._checksums.append(filepath)
+
+        return filepath
+
+    @rowmethod
+    def replace(self, row, *, prompt=True):
+        """Replaces a row with optional checksum verification"""
+
+        stores = []
+        keys = []
+
+        for k, v in self._filepaths.items():
+
+            store = self.external[v.store]
+            key = (store & self.proj(hash=k)).fetch1("KEY")
+
+            stores.append(store)
+            keys.append(key)
+
+        if prompt:
+            self.delete()
+        else:
+            self.delete_quick()
+
+        for store, key in zip(stores, keys):
+            (store & key).delete_quick()
+
+        self.insert1(row)
