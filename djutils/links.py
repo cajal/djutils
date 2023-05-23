@@ -108,6 +108,7 @@ class Part(dj.Part):
             )
             cls.insert(
                 [dict(**h, **k) for h, k in zip(hashes, keys)],
+                skip_duplicates=True,
             )
 
         else:
