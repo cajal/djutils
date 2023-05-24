@@ -110,10 +110,16 @@ class Set(dj.Lookup):
 
         elif not prompt or user_choice(f"Insert set with {n} keys?") == "yes":
 
-            cls.insert1(dict(key, members=n))
+            cls.insert1(
+                dict(key, members=n),
+                skip_duplicates=True,
+            )
 
             index = f"{cls.name}_index"
-            cls.Member.insert([{index: i, **k, **key} for i, k in enumerate(keys)])
+            cls.Member.insert(
+                [{index: i, **k, **key} for i, k in enumerate(keys)],
+                skip_duplicates=True,
+            )
 
             if not silent:
                 logger.info(f"{key} inserted.")
@@ -128,7 +134,10 @@ class Set(dj.Lookup):
             if not silent:
                 logger.info(f"Note for {key} inserted.")
 
-            cls.Note.insert1(dict(key, note=note), skip_duplicates=True)
+            cls.Note.insert1(
+                dict(key, note=note),
+                skip_duplicates=True,
+            )
 
         return key
 
