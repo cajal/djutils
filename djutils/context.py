@@ -15,8 +15,8 @@ def cache_rowproperty(*tables, maxsize=None):
         maximum number of cache elements
     """
     old_cache = cache.rowproperty
+    cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
     try:
-        cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
         yield
     finally:
         cache.rowproperty = old_cache
