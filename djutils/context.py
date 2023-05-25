@@ -8,16 +8,15 @@ def cache_rowproperty(*tables, maxsize=None):
 
     Parameters
     ----------
-    tables : type(dj.UserTable)
+    tables : subclass(dj.UserTable) | subclass(djutils.derived.Keys)
         if no tables are provided, the the row properties of all tables are cached.
         if tables are provided, then the row properties of provided tables only are cached.
     maxsize : int | none
         maximum number of cache elements
     """
-    assert cache.rowproperty is None, "Row properties are already being cached."
-
+    old_cache = cache.rowproperty
     cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
     try:
         yield
     finally:
-        cache.rowproperty = None
+        cache.rowproperty = old_cache
