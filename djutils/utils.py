@@ -13,19 +13,28 @@ class classproperty:
         return self.f(owner)
 
 
-# ----- from https://github.com/datajoint/datajoint-python -----
-
-
 def key_hash(mapping):
     """
-    32-byte hash of the mapping's key values sorted by the key name.
-    This is often used to convert a long primary key value into a shorter hash.
-    For example, the JobTable in datajoint.jobs uses this function to hash the primary key of autopopulated tables.
+    32-byte hash of the mapping's keys and values sorted by keys.
+
+    Parameters
+    ----------
+    mapping : Mapping
+        mapping to hash
+
+    Returns
+    -------
+    str
+        hexdigest of hash
     """
     hashed = hashlib.md5()
     for k, v in sorted(mapping.items()):
+        hashed.update(str(k).encode())
         hashed.update(str(v).encode())
     return hashed.hexdigest()
+
+
+# ----- from https://github.com/datajoint/datajoint-python -----
 
 
 def user_choice(prompt, choices=("yes", "no"), default=None):

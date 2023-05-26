@@ -14,9 +14,14 @@ def cache_rowproperty(*tables, maxsize=None):
     maxsize : int | none
         maximum number of cache elements
     """
-    old_cache = cache.rowproperty
-    cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
+    prev = cache.rowproperty
+
+    if isinstance(prev, cache.RowPropertyCache) and not prev.selective:
+        pass
+    else:
+        cache.rowproperty = cache.RowPropertyCache(*tables, maxsize=maxsize)
+        
     try:
         yield
     finally:
-        cache.rowproperty = old_cache
+        cache.rowproperty = prev
