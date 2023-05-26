@@ -2,6 +2,7 @@ import os
 from collections import deque
 from .rows import rowmethod
 from .utils import key_hash, classproperty, from_camel_case, user_choice
+from .logging import logger
 
 
 class Filepath:
@@ -71,8 +72,11 @@ class Filepath:
                 dirs = list(dirs)
 
                 if not filenames and not dirs:
-                    os.rmdir(dirpath)
-                    deleted.add(dirpath)
+                    try:
+                        os.rmdir(dirpath)
+                        deleted.add(dirpath)
+                    except OSError as e:
+                        logger.warning(e)
 
     @rowmethod
     def filepath(self, attr, *, checksum=True):
