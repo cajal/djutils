@@ -69,16 +69,6 @@ class Set(dj.Lookup):
         else:
             raise MissingError("Members are missing.")
 
-    @property
-    def set_restriction(self):
-        """
-        Returns
-        -------
-        list[dict]
-            restriction for the tuples that make up the set
-        """
-        return self.members.fetch(*self.member_key, as_dict=True, order_by=self.order)
-
     @classmethod
     def fill(cls, restriction, note=None, *, prompt=True, silent=False):
         """Creates a hash for the restricted tuples, and inserts into master, member, and note tables
