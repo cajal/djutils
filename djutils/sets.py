@@ -58,7 +58,7 @@ class Set(dj.Lookup):
         """
         Returns
         -------
-        Set.Part
+        Set.Member
             tuples that comprise the set
         """
         key, n = self.fetch1(dj.key, "members")
@@ -70,12 +70,12 @@ class Set(dj.Lookup):
             raise MissingError("Members are missing.")
 
     @property
-    def ordered_keys(self):
+    def members_restriction(self):
         """
         Returns
         -------
         list[dict]
-            ordered tuples that comprise the set
+            list of restrictions for the tuples that comprise the set
         """
         return self.members.fetch(*self.member_key, as_dict=True, order_by=self.order)
 
