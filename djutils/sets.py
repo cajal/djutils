@@ -3,7 +3,6 @@ from operator import mul
 from functools import reduce
 from .resolve import foreigns
 from .utils import classproperty, key_hash, user_choice, to_camel_case
-from .rows import rowproperty
 from .errors import MissingError
 from .logging import logger
 
@@ -54,7 +53,7 @@ class Set(dj.Lookup):
     def order(cls):
         return [f"{key} ASC" for key in cls.member_key]
 
-    @rowproperty
+    @property
     def members(self):
         """
         Returns
