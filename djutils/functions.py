@@ -5,6 +5,7 @@ from .errors import MissingError
 
 def merge(table, *others, missing_error=True):
     """Merges table with others
+
     Parameters
     ----------
     table : datatjoint.UserTable
@@ -14,8 +15,8 @@ def merge(table, *others, missing_error=True):
     missing_error : bool
         whether to raise MissingError if tuples are missing
 
-    Return
-    ------
+    Returns
+    -------
     datajoint.UserTable
         table merged to others
     """
@@ -25,3 +26,22 @@ def merge(table, *others, missing_error=True):
         raise MissingError()
 
     return merged
+
+
+def unique(table, attribute):
+    """Unique attribute from table
+
+    Parameters
+    ----------
+    table : datatjoint.UserTable
+        table to fetch from
+    * attributes : str
+        attributes to fetch
+
+    Returns
+    -------
+    ...
+        Unique attribute from table
+    """
+    (ret,) = set(table.fetch(attribute))
+    return ret
