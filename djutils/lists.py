@@ -75,7 +75,7 @@ class List(dj.Lookup):
         Returns
         -------
         dict | None
-            set key
+            list key
         """
         keys = [cls.key_source.restrict(_).fetch1() for _ in restrictions]
         n = len(keys)
