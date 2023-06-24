@@ -89,7 +89,7 @@ class List(dj.Lookup):
             if not silent:
                 logger.info(f"{key} already exists.")
 
-        elif not prompt or user_choice(f"Insert set with {n} keys?") == "yes":
+        elif not prompt or user_choice(f"Insert list with {n} keys?") == "yes":
 
             cls.insert1(
                 dict(key, members=n),
