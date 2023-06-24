@@ -3,7 +3,8 @@ import datajoint as dj
 from .populate import skip_missing
 from .methods import setup_method
 from .sets import setup_set
-from .links import setup_link, setup_link_set
+from .lists import setup_list
+from .links import setup_link, setup_link_set, setup_link_list
 from .filters import setup_filter, setup_filter_link, setup_filter_link_set
 
 
@@ -33,11 +34,17 @@ class Schema(dj.Schema):
     def set(self, cls):
         return setup_set(cls, self)
 
+    def list(self, cls):
+        return setup_list(cls, self)
+
     def link(self, cls):
         return setup_link(cls, self)
 
     def linkset(self, cls):
         return setup_link_set(cls, self)
+
+    def linklist(self, cls):
+        return setup_link_list(cls, self)
 
     def lookupfilter(self, cls, *, context=None):
         context = context or self.context or inspect.currentframe().f_back.f_locals

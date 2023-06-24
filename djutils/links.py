@@ -2,6 +2,7 @@ import datajoint as dj
 from .resolve import foreigns
 from .utils import key_hash
 from .sets import setup_set
+from .lists import setup_list
 from .logging import logger
 from .errors import MissingError
 
@@ -163,3 +164,13 @@ def setup_link_set(cls, schema):
     cls.keys = [cls.link]
 
     return setup_set(cls, schema)
+
+
+def setup_link_list(cls, schema):
+
+    if not issubclass(cls.link, Link):
+        raise TypeError("Provided link is not a subclass of Link.")
+
+    cls.keys = [cls.link]
+
+    return setup_list(cls, schema)

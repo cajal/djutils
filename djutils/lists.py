@@ -20,46 +20,38 @@ def master_definition(name, comment, length):
     )
 
 
-def part_definition(foreign_keys, name):
+def part_definition(name, foreign_keys):
     return """
     -> master
-    {foreign_keys}
+    {name}_index                    : int unsigned      # list index
     ---
-    {name}_index                    : int unsigned      # set index
+    {foreign_keys}
     """.format(
-        foreign_keys="\n    ".join([f"-> {f}" for f in foreign_keys]),
         name=name,
+        foreign_keys="\n    ".join([f"-> {f}" for f in foreign_keys]),
     )
 
 
 note_definition = """
     -> master
-    note                            : varchar(1024)     # note for set
+    note                            : varchar(1024)     # note for list
     ---
     note_ts = CURRENT_TIMESTAMP     : timestamp         # automatic timestamp
     """
 
 
-class Set(dj.Lookup):
+class List(dj.Lookup):
     @classproperty
     def key_source(cls):
         return reduce(mul, [key.proj() for key in cls.keys])
-
-    @classproperty
-    def member_key(cls):
-        return cls.key_source.primary_key
-
-    @classproperty
-    def order(cls):
-        return [f"{key} ASC" for key in cls.member_key]
 
     @property
     def members(self):
         """
         Returns
         -------
-        Set.Member
-            rows that make up the set
+        List.Member
+            rows that make up the list
         """
         key, n = self.fetch1(dj.key, "members")
         members = self.Member & key
@@ -70,23 +62,22 @@ class Set(dj.Lookup):
             raise MissingError("Members are missing.")
 
     @classmethod
-    def fill(cls, restriction, note=None, *, prompt=True, silent=False):
-        """Creates a hash for the restriction set, and inserts into master, member, and note tables
+    def fill(cls, restrictions, note=None, *, prompt=True, silent=False):
+        """Creates a hash for the restriction list, and inserts into master, member, and note tables
 
         Parameters
         ----------
-        restriction : datajoint restriction
+        restrictions : List[datajoint restriction]
             used to restrict key_source
         note : str | None
-            note to attach to the set
+            note to attach to the tuple set
 
         Returns
         -------
         dict | None
             set key
         """
-        keys = cls.key_source.restrict(restriction)
-        keys = keys.fetch(as_dict=True, order_by=cls.order)
+        keys = [cls.key_source.restrict(_).fetch1() for _ in restrictions]
         n = len(keys)
 
         key = {i: key_hash(k) for i, k in enumerate(keys)}
@@ -131,33 +122,8 @@ class Set(dj.Lookup):
 
         return key
 
-    @classmethod
-    def get(cls, restriction):
-        """
-        Parameters
-        ----------
-        restriction : datajoint restriction
-            used to restrict key_source
 
-        Returns
-        -------
-        Set
-            tuple that matches restriction
-        """
-        key = cls.key_source & restriction
-        n = len(key)
-
-        candidates = cls & f"members = {n}"
-        members = cls.Member & key
-        key = candidates.aggr(members, n="count(*)") & f"n = {n}"
-
-        if key:
-            return cls & key.fetch1(dj.key)
-        else:
-            raise MissingError("Set does not exist.")
-
-
-def setup_set(cls, schema):
+def setup_list(cls, schema):
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
@@ -166,7 +132,7 @@ def setup_set(cls, schema):
     Member = type(
         "Member",
         (dj.Part,),
-        {"definition": part_definition(foreign_keys, cls.name)},
+        {"definition": part_definition(cls.name, foreign_keys)},
     )
     Note = type(
         "Note",
@@ -179,6 +145,6 @@ def setup_set(cls, schema):
         "Member": Member,
         "Note": Note,
     }
-    cls = type(cls.__name__, (cls, Set), attr)
+    cls = type(cls.__name__, (cls, List), attr)
     cls = schema(cls, context=context)
     return cls
