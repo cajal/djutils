@@ -49,7 +49,7 @@ class Link(dj.Lookup):
     def link(self):
         """Restricted linked table
 
-        IMPORTANT: tuples must be restricted to a single type
+        IMPORTANT: must be restricted to a single row
         """
         link_type = self.fetch1(f"{self.name}_type")
         part = getattr(self, link_type) & self
@@ -116,7 +116,7 @@ class Part(dj.Part):
 
     @property
     def link(self):
-        """Returns the linked table restricted by tuples"""
+        """Returns the restricted linked table"""
         return self._link & self
 
 

@@ -59,7 +59,7 @@ class Set(dj.Lookup):
         Returns
         -------
         Set.Member
-            tuples that make up the set
+            rows that make up the set
         """
         key, n = self.fetch1(dj.key, "members")
         members = self.Member & key
