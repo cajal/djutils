@@ -20,14 +20,14 @@ def master_definition(name, comment, length):
     )
 
 
-def part_definition(foriegn_keys, name):
+def part_definition(foreign_keys, name):
     return """
     -> master
-    {foriegn_keys}
+    {foreign_keys}
     ---
     {name}_index                    : int unsigned      # set index
     """.format(
-        foriegn_keys="\n    ".join([f"-> {f}" for f in foriegn_keys]),
+        foreign_keys="\n    ".join([f"-> {f}" for f in foreign_keys]),
         name=name,
     )
 
@@ -161,12 +161,12 @@ def setup_set(cls, schema):
     length = int(getattr(cls, "length", 32))
     length = max(0, min(length, 32))
 
-    foriegn_keys, context = foreigns(cls.keys, schema)
+    foreign_keys, context = foreigns(cls.keys, schema)
 
     Member = type(
         "Member",
         (dj.Part,),
-        {"definition": part_definition(foriegn_keys, cls.name)},
+        {"definition": part_definition(foreign_keys, cls.name)},
     )
     Note = type(
         "Note",

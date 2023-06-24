@@ -161,6 +161,5 @@ def setup_link_set(cls, schema):
         raise TypeError("Provided link is not a subclass of Link.")
 
     cls.keys = [cls.link]
-    cls.part_name = "link"
 
     return setup_set(cls, schema)
