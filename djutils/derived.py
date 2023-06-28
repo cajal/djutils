@@ -63,7 +63,7 @@ class KeysMeta(type):
         return cls() & arg
 
     def __getattribute__(cls, name):
-        if name in ["key_list", "key_source", "primary_key"]:
+        if name in ["keys", "key_source", "primary_key"]:
             return cls().__getattribute__(name)
         else:
             return super().__getattribute__(name)
@@ -78,7 +78,7 @@ class Keys(metaclass=KeysMeta):
 
     @property
     def key_source(self):
-        return reduce(mul, [key.proj() for key in self.key_list])
+        return reduce(mul, [key.proj() for key in self.keys])
 
     @property
     def key(self):
@@ -104,5 +104,5 @@ class Keys(metaclass=KeysMeta):
 
 
 def keys(cls):
-    assert isinstance(cls.key_list, property)
+    assert isinstance(cls.keys, property)
     return type(cls.__name__, (cls, Keys), dict())
