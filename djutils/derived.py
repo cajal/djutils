@@ -75,6 +75,7 @@ class Keys(metaclass=KeysMeta):
     def __init__(self, restriction=[]):
         self.restriction = AndList(restriction)
         self._key = None
+        self._item = None
 
     @property
     def key_source(self):
@@ -85,6 +86,12 @@ class Keys(metaclass=KeysMeta):
         if self._key is None:
             self._key = (self.key_source & self.restriction).proj()
         return self._key
+
+    @property
+    def item(self):
+        if self._item is None:
+            self._item = self.key.fetch1()
+        return self._item
 
     @property
     def primary_key(self):
