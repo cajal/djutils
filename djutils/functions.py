@@ -35,13 +35,12 @@ def unique(table, attribute):
     ----------
     table : datatjoint.UserTable
         table to fetch from
-    * attributes : str
+    attributes : str
         attributes to fetch
 
     Returns
     -------
-    ...
-        Unique attribute from table
+    Unique attribute from table
     """
     (ret,) = set(table.fetch(attribute))
     return ret
