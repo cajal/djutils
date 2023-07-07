@@ -42,13 +42,13 @@ class Abstract:
 
 @schema.set
 class RowSet:
-    links = [TableA, TableB, ...]
+    keys = [TableA, TableB, ...]
     name = "rowset"
 
 
 @schema.list
 class RowSet:
-    links = [TableA, TableB, ...]
+    keys = [TableA, TableB, ...]
     name = "rowlist"
 ```
 
