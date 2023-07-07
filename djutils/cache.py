@@ -24,9 +24,9 @@ class RowPropertyCache(Cache):
         cls = row.__class__
 
         if issubclass(cls, Table):
-            key = key_hash(dict(row.fetch1("KEY"), _class=cls, _method=method))
+            key = key_hash(dict(row.fetch1("KEY"), _class=id(cls), _method=id(method)))
         elif issubclass(cls, Keys):
-            key = key_hash(dict(row.key.fetch1("KEY"), _class=cls, _method=method))
+            key = key_hash(dict(row.key.fetch1("KEY"), _class=id(cls), _method=id(method)))
         else:
             raise TypeError("Cached row property only works on subclasses of datajoint.Table or djutils.Keys")
 
