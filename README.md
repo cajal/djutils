@@ -1,5 +1,6 @@
 # djutils
-Datajoint Utilities
+
+`djutils` aims to provide helpful tools for creating row-oriented, composobale, and compact `datajoint` pipelines.
 
 
 ## Install
