@@ -31,7 +31,7 @@ class ExampleComputed:
     """
 ```
 
-In addition, `djutils` provides a common table designs that are useful for creating composable and row-oriented pipelines that depend on abstractions, not concretions.
+In addition, `djutils` provides table designs that are useful for creating composable and row-oriented pipelines that depend on abstractions, not concretions.
 
 ```python
 @schema.link
