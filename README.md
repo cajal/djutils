@@ -1,6 +1,6 @@
 # djutils
 
-`djutils` aims to provide helpful tools for creating row-oriented, composobale, and compact `datajoint` pipelines.
+`djutils` provides helpful tools for reducing boilerplate code and creating readable row-oriented datajoint pipelines that depend on abstractions and not concretions.
 
 
 ## Install
