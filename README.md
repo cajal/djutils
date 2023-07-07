@@ -29,6 +29,9 @@ class ExampleComputed:
     definition = """
     ...
     """
+
+    def make(self, key):
+        ...
 ```
 
 In addition, `djutils` provides table designs that are useful for creating composable and row-oriented pipelines that depend on abstractions, not concretions.
@@ -52,4 +55,4 @@ class RowSet:
     name = "rowlist"
 ```
 
-... and many more.
+... and much more.
