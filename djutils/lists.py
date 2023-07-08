@@ -68,7 +68,7 @@ class List(dj.Lookup):
         Parameters
         ----------
         restrictions : List[datajoint restriction]
-            used to restrict key_source
+            used to restrict key_source -- each restriction must restrict the key_source to a single row
         note : str | None
             note to attach to the tuple set
 
@@ -121,6 +121,31 @@ class List(dj.Lookup):
             )
 
         return key
+
+    @classmethod
+    def get(cls, restrictions):
+        """
+        Parameters
+        ----------
+        restrictions : List[datajoint restriction]
+            used to restrict key_source -- each restriction must restrict the key_source to a single row
+
+        Returns
+        -------
+        Set
+            tuple that matches restriction
+        """
+        keys = [cls.key_source.restrict(_).fetch1() for _ in restrictions]
+        n = len(keys)
+
+        candidates = cls & f"members = {n}"
+        members = cls.Member & keys
+        key = candidates.aggr(members, n="count(*)") & f"n = {n}"
+
+        if key:
+            return cls & key.fetch1(dj.key)
+        else:
+            raise MissingError("List does not exist.")
 
 
 def setup_list(cls, schema):
