@@ -1,6 +1,6 @@
 # djutils
 
-`djutils` provides helpfus tools for creating `datajoint` pipelines.
+`djutils` provides helpful tools for creating `datajoint` pipelines.
 
 
 ## Install
