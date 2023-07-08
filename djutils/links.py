@@ -52,8 +52,8 @@ class Link(dj.Lookup):
 
         IMPORTANT: must be restricted to a single row
         """
-        link_type = self.fetch1(f"{self.name}_type")
-        part = getattr(self, link_type) & self
+        key, link_type = self.fetch1(dj.key, f"{self.name}_type")
+        part = getattr(self, link_type) & key
         return part.link
 
     @classmethod
@@ -117,8 +117,11 @@ class Part(dj.Part):
 
     @property
     def link(self):
-        """Returns the restricted linked table"""
-        return self._link & self
+        """Restricted linked table
+
+        IMPORTANT: must be restricted to a single row
+        """
+        return self._link & self.fetch1()
 
 
 def setup_link(cls, schema):
