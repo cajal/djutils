@@ -50,7 +50,7 @@ class ExampleSet:
 
 
 @schema.list
-class ExampList:
+class ExampleList:
     keys = [TableA, TableB, ...]
     name = "rowlist"
 ```
