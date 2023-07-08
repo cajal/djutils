@@ -141,8 +141,8 @@ class Set(dj.Lookup):
 
         Returns
         -------
-        Set
-            tuple that matches restriction
+        dict
+            set key
         """
         key = cls.key_source & restriction
         n = len(key)
@@ -152,7 +152,7 @@ class Set(dj.Lookup):
         key = candidates.aggr(members, n="count(*)") & f"n = {n}"
 
         if key:
-            return cls & key.fetch1(dj.key)
+            return key.fetch1(dj.key)
         else:
             raise MissingError("Set does not exist.")
 

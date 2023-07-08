@@ -132,8 +132,8 @@ class List(dj.Lookup):
 
         Returns
         -------
-        Set
-            tuple that matches restriction
+        dict
+            list key
         """
         keys = [cls.key_source.restrict(_).fetch1() for _ in restrictions]
         n = len(keys)
