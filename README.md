@@ -11,7 +11,7 @@ pip3 install git+https://github.com/cajal/djutils.git
 
 ## Getting Started
 
-Standard `lookup`, and `computed` datajoint tables can be created as follows:
+Standard `lookup` and `computed` datajoint tables can be created as follows:
 
 ```python
 from djutils import Schema
