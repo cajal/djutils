@@ -46,13 +46,13 @@ class Abstract:
 @schema.set
 class ExampleSet:
     keys = [TableA, TableB, ...]
-    name = "rowset"
+    name = "exampleset"
 
 
 @schema.list
 class ExampleList:
     keys = [TableA, TableB, ...]
-    name = "rowlist"
+    name = "examplelist"
 ```
 
 ... and much more.
