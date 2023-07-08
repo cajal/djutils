@@ -57,7 +57,7 @@ class Link(dj.Lookup):
         return part.link
 
     @classmethod
-    def get(cls, link_type, link_key=None):
+    def query(cls, link_type, link_key=None):
         """
         Parameters
         ----------
