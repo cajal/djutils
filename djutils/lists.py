@@ -143,7 +143,7 @@ class List(dj.Lookup):
         key = candidates.aggr(members, n="count(*)") & f"n = {n}"
 
         if key:
-            return cls & key.fetch1(dj.key)
+            return key.fetch1(dj.key)
         else:
             raise MissingError("List does not exist.")
 
