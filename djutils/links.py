@@ -44,7 +44,7 @@ class Link(dj.Lookup):
         for table in cls.tables:
             part = getattr(cls, table)
             master = cls & {f"{cls.name}_type": part.__name__}
-            keys += (master - part).fetch("KEY")
+            keys += (master - part).fetch(dj.key)
 
         (cls & keys).delete()
 
@@ -70,7 +70,7 @@ class Link(dj.Lookup):
 
         Returns
         -------
-        dj.Lookup
+        djutils.links.Link
             link table restricted by link type, and optionally restricted by link key
         """
         keys = cls & {f"{cls.name}_type": link_type}
