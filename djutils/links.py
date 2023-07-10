@@ -42,9 +42,11 @@ class Link(dj.Lookup):
         """Deletes tuples from self that are missing in links"""
         keys = []
         for table in cls.tables:
-            keys += getattr(cls, table).fetch(dj.key)
+            part = getattr(cls, table)
+            master = cls & {f"{cls.name}_type": part.__name__}
+            keys += (master - part).fetch("KEY")
 
-        (cls - keys).delete()
+        (cls & keys).delete()
 
     @property
     def link(self):
@@ -71,8 +73,7 @@ class Link(dj.Lookup):
         dj.Lookup
             link table restricted by link type, and optionally restricted by link key
         """
-        _link_type = f"{cls.name}_type"
-        keys = cls & {_link_type: link_type}
+        keys = cls & {f"{cls.name}_type": link_type}
         if not keys:
             raise MissingError("Link type does not exist.")
 
