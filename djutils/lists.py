@@ -138,9 +138,12 @@ class List(dj.Lookup):
         keys = [cls.key_source.restrict(_).fetch1() for _ in restrictions]
         n = len(keys)
 
-        candidates = cls & f"members = {n}"
-        members = cls.Member & keys
-        key = candidates.aggr(members, n="count(*)") & f"n = {n}"
+        if n:
+            candidates = cls & f"members = {n}"
+            members = cls.Member & keys
+            key = candidates.aggr(members, n="count(*)") & f"n = {n}"
+        else:
+            key = cls & "members = 0"
 
         if key:
             return key.fetch1(dj.key)

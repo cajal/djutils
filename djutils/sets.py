@@ -147,9 +147,12 @@ class Set(dj.Lookup):
         key = cls.key_source & restriction
         n = len(key)
 
-        candidates = cls & f"members = {n}"
-        members = cls.Member & key
-        key = candidates.aggr(members, n="count(*)") & f"n = {n}"
+        if n:
+            candidates = cls & f"members = {n}"
+            members = cls.Member & key
+            key = candidates.aggr(members, n="count(*)") & f"n = {n}"
+        else:
+            key = cls & "members = 0"
 
         if key:
             return key.fetch1(dj.key)
